@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/oarkflow/errors v0.0.6
-	github.com/oarkflow/metadata v0.0.22
+	github.com/oarkflow/metadata v0.0.24
 	github.com/oarkflow/pkg v0.0.55
 	gorm.io/gorm v1.25.1
 )
@@ -42,7 +42,7 @@ require (
 	golang.org/x/text v0.9.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
-	gorm.io/driver/mysql v1.5.0 // indirect
-	gorm.io/driver/postgres v1.5.0 // indirect
-	gorm.io/driver/sqlserver v1.4.3 // indirect
+	gorm.io/driver/mysql v1.5.1 // indirect
+	gorm.io/driver/postgres v1.5.2 // indirect
+	gorm.io/driver/sqlserver v1.5.0 // indirect
 )

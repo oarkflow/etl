@@ -46,9 +46,7 @@ type ETL struct {
 	transformers []Transformer
 	destCon      metadata.DataSource
 	dest         Destination
-	cloneSource  bool
-	rowLimit     int64
-	batchSize    int
+	cfg          Config
 }
 
 func New(cfg ...Config) *ETL {
@@ -60,9 +58,7 @@ func New(cfg ...Config) *ETL {
 		config.BatchSize = 100
 	}
 	e := &ETL{
-		cloneSource: config.CloneSource,
-		rowLimit:    config.RowLimit,
-		batchSize:   config.BatchSize,
+		cfg: config,
 	}
 	return e
 }
@@ -76,11 +72,6 @@ func (e *ETL) AddSource(con metadata.DataSource, src Source) *ETL {
 func (e *ETL) AddDestination(con metadata.DataSource, dest Destination) *ETL {
 	e.destCon = con
 	e.dest = dest
-	return e
-}
-
-func (e *ETL) CloneSource(clone bool) *ETL {
-	e.cloneSource = clone
 	return e
 }
 
@@ -98,25 +89,17 @@ func (e *ETL) AddTransformer(transformer ...Transformer) *ETL {
 	return e
 }
 
-func (e *ETL) Process(payload ...[]map[string]any) ([]map[string]any, []map[string]any, error) {
+func (e *ETL) ProcessPayload(payload []map[string]any) ([]map[string]any, error) {
+	return e.process(0, payload)
+}
+
+func (e *ETL) process(batch int64, data []map[string]any) ([]map[string]any, error) {
+	var err error
 	var failedData []map[string]any
-	if e.cloneSource {
-		err := metadata.CloneTable(e.srcCon, e.destCon, e.src.Name, e.dest.Name)
-		if err != nil {
-			return nil, nil, err
-		}
-	}
-	if e.dest.Name == "" {
-		e.dest.Name = e.src.Name
-	}
-	data, err := e.getData(payload...)
-	if err != nil {
-		return nil, nil, errors.NewE(err, fmt.Sprintf("Unable to get data for %s", e.src.Name), "ETLTransform")
-	}
 	for _, filter := range e.filters {
 		d, err := filter.Apply(data)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 		data = d.([]map[string]any)
 	}
@@ -125,43 +108,106 @@ func (e *ETL) Process(payload ...[]map[string]any) ([]map[string]any, []map[stri
 		destFields, err = e.destCon.GetFields(e.dest.Name)
 		if err != nil {
 			if err != nil {
-				return nil, nil, errors.NewE(err, fmt.Sprintf("Unable to get field list for %s", e.dest.Name), "ETLTransform")
+				return nil, errors.NewE(err, fmt.Sprintf("Unable to get field list for %s", e.dest.Name), "ETLTransform")
 			}
 		}
 	}
 
-	var rows []map[string]any
 	for _, row := range data {
+		for field, val := range row {
+			lowerField := strings.ToLower(field)
+			row[lowerField] = val
+			if lowerField != field {
+				delete(row, field)
+			}
+		}
 		err = e.transform(row)
 		if err != nil {
-			return nil, failedData, err
+			return failedData, err
 		}
 		if e.destCon != nil {
 			for _, field := range destFields {
 				fixFieldType(row, field)
 			}
-			if len(rows) > 0 && len(rows)%e.batchSize == 0 {
-				err = e.destCon.Store(e.dest.Name, rows)
-				if err != nil {
-					if !errors.Is(err, gorm.ErrDuplicatedKey) {
-						failedData = append(failedData, rows...)
-					} else {
-						return nil, failedData, err
-					}
-				}
-				rows = []map[string]any{}
+		}
+	}
+	if len(data) > 0 {
+		err = e.destCon.Store(e.dest.Name, data)
+		if err != nil {
+			if !errors.Is(err, gorm.ErrDuplicatedKey) {
+				failedData = append(failedData, data...)
 			} else {
-				rows = append(rows, row)
+				return failedData, err
 			}
 		}
 	}
-	return data, failedData, nil
+	if len(failedData) > 0 {
+		return e.processFailedData(map[int64][]map[string]any{
+			batch: failedData,
+		})
+	}
+	return failedData, nil
 }
 
-func (e *ETL) getData(payload ...[]map[string]any) ([]map[string]any, error) {
-	if len(payload) > 0 {
-		return payload[0], nil
+type Page struct {
+	Last   bool
+	Offset int64
+	Limit  int
+}
+
+func (e *ETL) processFailedData(payload map[int64][]map[string]any) ([]map[string]any, error) {
+	var failedData []map[string]any
+	payloadLen := 0
+	failedDataLen := 0
+	for batch, d := range payload {
+		for _, data := range d {
+			payloadLen++
+			err := e.destCon.Store(e.dest.Name, data)
+			if err != nil {
+				failedDataLen++
+				if !errors.Is(err, gorm.ErrDuplicatedKey) {
+					failedData = append(failedData, data)
+				}
+			}
+		}
+		fmt.Println("Processed...", payloadLen-failedDataLen, " failed records in", e.src.Name, " out of ", payloadLen, "in batch ", batch)
 	}
+	return failedData, nil
+}
+
+func (e *ETL) Process() (map[int64][]map[string]any, error) {
+	failedData := make(map[int64][]map[string]any)
+	if e.dest.Name == "" {
+		e.dest.Name = e.src.Name
+	}
+	if e.cfg.CloneSource {
+		err := metadata.CloneTable(e.srcCon, e.destCon, e.src.Name, e.dest.Name)
+		if err != nil {
+			return nil, err
+		}
+	}
+	var totalData, failedRows int
+	page := &Page{Limit: e.cfg.BatchSize}
+	fmt.Println("Processing migration for", e.src.Name)
+	for !page.Last {
+		offset := page.Offset
+		data, err := e.getData(page)
+		totalData += len(data)
+		if err != nil {
+			return nil, errors.NewE(err, fmt.Sprintf("Unable to get data for %s", e.src.Name), "ETLTransform")
+		}
+		failed, err := e.process(offset, data)
+		if err != nil {
+			return nil, err
+		}
+		failedRows += len(failed)
+		failedData[offset] = failed
+	}
+	fmt.Println("Processed...", totalData-failedRows, "records of", totalData, "in", e.src.Name)
+	return failedData, nil
+}
+
+func (e *ETL) getData(page *Page) ([]map[string]any, error) {
 	err := connect(e.srcCon, e.destCon)
 	if err != nil {
 		return nil, err
@@ -183,10 +229,20 @@ func (e *ETL) getData(payload ...[]map[string]any) ([]map[string]any, error) {
 		name := strings.ToLower(field.Name)
 		sql += fmt.Sprintf(" ORDER BY %s", name)
 	}
-	if e.rowLimit > 0 {
-		sql += fmt.Sprintf(" LIMIT %d", e.rowLimit)
+	if e.cfg.RowLimit > 0 {
+		sql += fmt.Sprintf(" LIMIT %d", e.cfg.RowLimit)
+		return e.srcCon.GetRawCollection(sql, filter)
 	}
-	return e.srcCon.GetRawCollection(sql, filter)
+	sql += fmt.Sprintf(" LIMIT %d, %d", page.Offset, page.Limit)
+	data, err := e.srcCon.GetRawCollection(sql, filter)
+	if err != nil {
+		return nil, err
+	}
+	if len(data) == 0 {
+		page.Last = true
+	}
+	page.Offset += int64(page.Limit)
+	return data, nil
 }
 
 func (e *ETL) transform(row map[string]any) error {
@@ -220,13 +276,22 @@ func MigrateDB(srcCon metadata.DataSource, destCon metadata.DataSource, config C
 			tables = append(tables, src.Name)
 		}
 	}
+	if config.CloneSource {
+		for _, table := range tables {
+			err = metadata.CloneTable(srcCon, destCon, table, table)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	for _, src := range tables {
 		etl := New(Config{
-			RowLimit:    config.RowLimit,
-			CloneSource: true,
-			Persist:     config.Persist,
+			RowLimit:  config.RowLimit,
+			Persist:   config.Persist,
+			BatchSize: config.BatchSize,
 		})
-		_, _, err := etl.
+		_, err := etl.
 			AddSource(srcCon, Source{Name: src}).
 			AddDestination(destCon, Destination{}).
 			Process()

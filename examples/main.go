@@ -12,8 +12,8 @@ import (
 )
 
 func main() {
-	// migrateDB()
-	etlWithFilter()
+	migrateDB()
+	// etlWithFilter()
 }
 
 func etlWithFilter() {
@@ -31,9 +31,9 @@ func etlWithFilter() {
 	})
 
 	e := etl.New()
-	// e.AddFilters(r)
+	e.AddFilters(r)
 	e.AddTransformer(mapper)
-	fmt.Println(e.Process(d))
+	fmt.Println(e.ProcessPayload(d))
 }
 
 func tableMigration() {
@@ -48,8 +48,8 @@ func tableMigration() {
 	instance.AddSource(source, etl.Source{Name: "tbl_user"})
 	// instance.AddTransformer(mapper)
 	instance.AddDestination(destination, etl.Destination{})
-	instance.CloneSource(true)
-	_, _, err := instance.Process()
+	// instance.CloneSource(true)
+	_, err := instance.Process()
 	if err != nil {
 		panic(err)
 	}
@@ -69,20 +69,22 @@ func migrateDB() {
 
 func conn() (metadata.DataSource, metadata.DataSource) {
 	cfg1 := metadata.Config{
-		Host:     "localhost",
-		Port:     3307,
-		Driver:   "mysql",
-		Username: "root",
-		Password: "root",
-		Database: "cleardb",
+		Host:          "localhost",
+		Port:          3307,
+		Driver:        "mysql",
+		Username:      "root",
+		Password:      "root",
+		Database:      "cleardb",
+		DisableLogger: true,
 	}
 	cfg := metadata.Config{
-		Host:     "localhost",
-		Port:     5432,
-		Driver:   "postgresql",
-		Username: "postgres",
-		Password: "postgres",
-		Database: "clear",
+		Host:          "localhost",
+		Port:          5432,
+		Driver:        "postgresql",
+		Username:      "postgres",
+		Password:      "postgres",
+		Database:      "clear",
+		DisableLogger: true,
 	}
 	source := metadata.New(cfg1)
 	destination := metadata.New(cfg)
