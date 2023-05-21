@@ -1,23 +1,44 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"github.com/oarkflow/metadata"
+	"github.com/oarkflow/pkg/rule"
 
 	"github.com/oarkflow/etl"
+	"github.com/oarkflow/etl/mapper"
 )
 
 func main() {
-	migrateDB()
+	// migrateDB()
+	etlWithFilter()
 }
 
-func etlProcess() {
-	source, destination := conn()
-	/*mapper := mapper.New(&mapper.Config{
+func etlWithFilter() {
+	data := `[{"code": "A000", "desc": "Cholera due to Vibrio cholerae 01, biovar cholerae"}, {"code": "A001", "desc": "Cholera due to Vibrio cholerae 01, biovar eltor"}, {"code": "A009", "desc": "Cholera, unspecified"}, {"code": "A0100", "desc": "Typhoid fever, unspecified"}, {"code": "A0101", "desc": "Typhoid meningitis"}, {"code": "A0102", "desc": "Typhoid fever with heart involvement"}, {"code": "A0103", "desc": "Typhoid pneumonia"}, {"code": "A0104", "desc": "Typhoid arthritis"}, {"code": "A0105", "desc": "Typhoid osteomyelitis"}]`
+	var d []map[string]any
+	json.Unmarshal([]byte(data), &d)
+	r := rule.New()
+	r.And(rule.NewCondition("code", rule.IN, []string{"A000", "A001"}))
+
+	mapper := mapper.New(&mapper.Config{
 		FieldMaps: map[string]string{
-			"first_name": "name",
+			"code": "cpt_code",
 		},
 		KeepUnmatchedFields: false,
-	})*/
+	})
+
+	e := etl.New()
+	// e.AddFilters(r)
+	e.AddTransformer(mapper)
+	fmt.Println(e.Process(d))
+}
+
+func tableMigration() {
+	source, destination := conn()
+	/**/
 	/*concat := concat.New(&concat.Config{
 		SourceFields:     []string{"first_name", "last_name"},
 		DestinationField: "name",
@@ -28,7 +49,7 @@ func etlProcess() {
 	// instance.AddTransformer(mapper)
 	instance.AddDestination(destination, etl.Destination{})
 	instance.CloneSource(true)
-	_, err := instance.Process()
+	_, _, err := instance.Process()
 	if err != nil {
 		panic(err)
 	}

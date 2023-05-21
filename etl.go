@@ -7,6 +7,7 @@ import (
 
 	"github.com/oarkflow/errors"
 	"github.com/oarkflow/metadata"
+	"github.com/oarkflow/pkg/rule"
 	"gorm.io/gorm"
 )
 
@@ -41,6 +42,7 @@ type Config struct {
 type ETL struct {
 	srcCon       metadata.DataSource
 	src          Source
+	filters      []*rule.Rule
 	transformers []Transformer
 	destCon      metadata.DataSource
 	dest         Destination
@@ -82,6 +84,13 @@ func (e *ETL) CloneSource(clone bool) *ETL {
 	return e
 }
 
+func (e *ETL) AddFilters(rules ...*rule.Rule) *ETL {
+	if len(rules) > 0 {
+		e.filters = append(e.filters, rules...)
+	}
+	return e
+}
+
 func (e *ETL) AddTransformer(transformer ...Transformer) *ETL {
 	if len(transformer) > 0 {
 		e.transformers = append(e.transformers, transformer...)
@@ -89,12 +98,12 @@ func (e *ETL) AddTransformer(transformer ...Transformer) *ETL {
 	return e
 }
 
-func (e *ETL) Process(payload ...[]map[string]any) ([]map[string]any, error) {
+func (e *ETL) Process(payload ...[]map[string]any) ([]map[string]any, []map[string]any, error) {
 	var failedData []map[string]any
 	if e.cloneSource {
 		err := metadata.CloneTable(e.srcCon, e.destCon, e.src.Name, e.dest.Name)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 	if e.dest.Name == "" {
@@ -102,48 +111,51 @@ func (e *ETL) Process(payload ...[]map[string]any) ([]map[string]any, error) {
 	}
 	data, err := e.getData(payload...)
 	if err != nil {
-		return nil, errors.NewE(err, fmt.Sprintf("Unable to get data for %s", e.src.Name), "ETLTransform")
+		return nil, nil, errors.NewE(err, fmt.Sprintf("Unable to get data for %s", e.src.Name), "ETLTransform")
 	}
-	destFields, err := e.destCon.GetFields(e.dest.Name)
-	if err != nil {
+	for _, filter := range e.filters {
+		d, err := filter.Apply(data)
 		if err != nil {
-			return nil, errors.NewE(err, fmt.Sprintf("Unable to get field list for %s", e.dest.Name), "ETLTransform")
+			return nil, nil, err
+		}
+		data = d.([]map[string]any)
+	}
+	var destFields []metadata.Field
+	if e.destCon != nil {
+		destFields, err = e.destCon.GetFields(e.dest.Name)
+		if err != nil {
+			if err != nil {
+				return nil, nil, errors.NewE(err, fmt.Sprintf("Unable to get field list for %s", e.dest.Name), "ETLTransform")
+			}
 		}
 	}
+
 	var rows []map[string]any
 	for _, row := range data {
-		// Moved to Sanitize with LowerKeys config
-		// for field, val := range row {
-		// 	lowerField := strings.ToLower(field)
-		// 	row[lowerField] = val
-		// 	if lowerField != field {
-		// 		delete(row, field)
-		// 	}
-		// }
-
 		err = e.transform(row)
 		if err != nil {
-			return nil, err
+			return nil, failedData, err
 		}
-		for _, field := range destFields {
-			fixFieldType(row, field)
-		}
-		if len(rows) > 0 && len(rows)%e.batchSize == 0 {
-			err = e.destCon.Store(e.dest.Name, rows)
-			if err != nil {
-				if !errors.Is(err, gorm.ErrDuplicatedKey) {
-					failedData = append(failedData, rows...)
-				} else {
-					panic(err)
-				}
+		if e.destCon != nil {
+			for _, field := range destFields {
+				fixFieldType(row, field)
 			}
-			rows = []map[string]any{}
-		} else {
-			rows = append(rows, row)
+			if len(rows) > 0 && len(rows)%e.batchSize == 0 {
+				err = e.destCon.Store(e.dest.Name, rows)
+				if err != nil {
+					if !errors.Is(err, gorm.ErrDuplicatedKey) {
+						failedData = append(failedData, rows...)
+					} else {
+						return nil, failedData, err
+					}
+				}
+				rows = []map[string]any{}
+			} else {
+				rows = append(rows, row)
+			}
 		}
-
 	}
-	return failedData, nil
+	return data, failedData, nil
 }
 
 func (e *ETL) getData(payload ...[]map[string]any) ([]map[string]any, error) {
@@ -214,7 +226,7 @@ func MigrateDB(srcCon metadata.DataSource, destCon metadata.DataSource, config C
 			CloneSource: true,
 			Persist:     config.Persist,
 		})
-		_, err := etl.
+		_, _, err := etl.
 			AddSource(srcCon, Source{Name: src}).
 			AddDestination(destCon, Destination{}).
 			Process()
