@@ -1,6 +1,10 @@
 package mapper
 
 import (
+	"strings"
+
+	"github.com/oarkflow/pkg/evaluate"
+
 	"github.com/oarkflow/etl"
 )
 
@@ -20,12 +24,35 @@ func (m *Mapper) Name() string {
 func (m *Mapper) Transform(data etl.Data) error {
 	switch data := data.(type) {
 	case map[string]any:
-		for field, value := range m.cfg.FieldMaps {
-			if val, ok := data[field]; ok {
-				data[value] = val
-				delete(data, field)
-			} else if !m.cfg.KeepUnmatchedFields {
-				delete(data, field)
+		var fields []string
+		for f, _ := range data {
+			fields = append(fields, f)
+		}
+		for dest, src := range m.cfg.FieldMaps {
+			if strings.HasPrefix(src, "{{") {
+				p, _ := evaluate.Parse(src, true)
+				pr := evaluate.NewEvalParams(nil)
+				d, err := p.Eval(pr)
+				if err == nil {
+					data[dest] = d
+				}
+			} else if val, ok := data[src]; ok {
+				data[dest] = val
+				delete(data, src)
+			}
+		}
+		if !m.cfg.KeepUnmatchedFields {
+			for k, _ := range data {
+				found := false
+				for field, _ := range m.cfg.FieldMaps {
+					if k == field {
+						found = true
+						break
+					}
+				}
+				if !found {
+					delete(data, k)
+				}
 			}
 		}
 	}
