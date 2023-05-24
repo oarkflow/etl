@@ -31,7 +31,7 @@ func (m *Mapper) Transform(data etl.Data) error {
 		for dest, src := range m.cfg.FieldMaps {
 			if strings.HasPrefix(src, "{{") {
 				p, _ := evaluate.Parse(src, true)
-				pr := evaluate.NewEvalParams(nil)
+				pr := evaluate.NewEvalParams(data)
 				d, err := p.Eval(pr)
 				if err == nil {
 					data[dest] = d

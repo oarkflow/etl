@@ -164,10 +164,11 @@ func (e *ETL) processFailedData(payload map[int64][]map[string]any) ([]map[strin
 			payloadLen++
 			err := e.destCon.Store(e.dest.Name, data)
 			if err != nil {
-				panic(err)
 				failedDataLen++
 				if !errors.Is(err, gorm.ErrDuplicatedKey) {
 					failedData = append(failedData, data)
+				} else {
+					return nil, err
 				}
 			}
 		}
@@ -317,8 +318,10 @@ func fixFieldType(row map[string]any, field metadata.Field) {
 			t := fmt.Sprintf("%v", v)
 			if contains([]string{"1", "true"}, t) {
 				row[field.Name] = true
-			} else {
+			} else if contains([]string{"0", "false"}, t) {
 				row[field.Name] = false
+			} else {
+				row[field.Name] = nil
 			}
 		default:
 			row[field.Name] = v
