@@ -164,6 +164,7 @@ func (e *ETL) processFailedData(payload map[int64][]map[string]any) ([]map[strin
 			payloadLen++
 			err := e.destCon.Store(e.dest.Name, data)
 			if err != nil {
+				panic(err)
 				failedDataLen++
 				if !errors.Is(err, gorm.ErrDuplicatedKey) {
 					failedData = append(failedData, data)
