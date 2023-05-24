@@ -42,14 +42,7 @@ func (m *Mapper) Transform(data etl.Data) error {
 		}
 		if !m.cfg.KeepUnmatchedFields {
 			for k, _ := range data {
-				found := false
-				for field, _ := range m.cfg.FieldMaps {
-					if k == field {
-						found = true
-						break
-					}
-				}
-				if !found {
+				if _, ok := m.cfg.FieldMaps[k]; !ok {
 					delete(data, k)
 				}
 			}
