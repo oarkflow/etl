@@ -38,9 +38,6 @@ func (m *Mapper) Transform(data etl.Data) error {
 				}
 			} else if val, ok := data[src]; ok {
 				data[dest] = val
-				if dest != src {
-					delete(data, src)
-				}
 			}
 		}
 		if !m.cfg.KeepUnmatchedFields {
