@@ -6,6 +6,7 @@ require (
 	github.com/oarkflow/errors v0.0.6
 	github.com/oarkflow/metadata v0.0.26
 	github.com/oarkflow/pkg v0.0.57
+	github.com/sourcegraph/conc v0.2.0
 	gorm.io/gorm v1.25.1
 )
 

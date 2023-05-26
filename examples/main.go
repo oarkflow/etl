@@ -39,13 +39,24 @@ func etlWithFilter() {
 }
 
 func settingsTableMigration() {
+	mapper := mapper.New(&mapper.Config{
+		FieldMaps: map[string]string{
+			"work_item_id": "work_item_uid",
+		},
+		KeepUnmatchedFields: true,
+	})
 	source, destination := conn()
 	instance := etl.New(etl.Config{CloneSource: false})
 	instance.AddSource(source, etl.Source{Name: "tbl_work_item"})
+	instance.AddTransformer(mapper)
 	instance.AddDestination(destination, etl.Destination{
 		Name:          "work_item_settings",
 		Type:          "table",
-		ExcludeFields: []string{"facility_id", "work_item_type_id", "work_item_uid"},
+		ExcludeFields: []string{"facility_id", "work_item_type_id", "work_item_uid", "work_item_id"},
+		IncludeFields: []string{"work_item_id"},
+		ExtraValues: map[string]any{
+			"wi_setting_order_index": 1,
+		},
 		KeyValueTable: true,
 		StoreDataType: true,
 	})
@@ -91,7 +102,7 @@ func migrateDB() {
 func conn() (metadata.DataSource, metadata.DataSource) {
 	cfg1 := metadata.Config{
 		Host:          "localhost",
-		Port:          3306,
+		Port:          3307,
 		Driver:        "mysql",
 		Username:      "root",
 		Password:      "root",

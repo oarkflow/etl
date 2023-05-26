@@ -2,6 +2,7 @@ package etl
 
 import (
 	"fmt"
+	"github.com/oarkflow/pkg/str"
 	"strconv"
 	"strings"
 
@@ -32,6 +33,8 @@ type Destination struct {
 	ValueField    string
 	DataTypeField string
 	ExcludeFields []string
+	IncludeFields []string
+	ExtraValues   map[string]any
 	KeyValueTable bool
 	StoreDataType bool
 }
@@ -156,7 +159,6 @@ func (e *ETL) process(batch int64, data []map[string]any) ([]map[string]any, err
 		return e.storeData(batch, data)
 	}
 	if len(payload) > 0 {
-		fmt.Println(payload)
 		return e.storeData(batch, payload)
 	}
 	return nil, nil
@@ -168,6 +170,7 @@ func (e *ETL) storeData(batch int64, data []map[string]any) ([]map[string]any, e
 	if len(data) > 0 {
 		err = e.destCon.Store(e.dest.Name, data)
 		if err != nil {
+			panic(err)
 			if !errors.Is(err, gorm.ErrDuplicatedKey) {
 				failedData = append(failedData, data...)
 			} else {
@@ -198,38 +201,59 @@ func (e *ETL) processKeyValueTable(row map[string]any) ([]map[string]any, error)
 	if err != nil {
 		return nil, err
 	}
-	if len(e.dest.ExcludeFields) > 0 {
-		for _, field := range e.dest.ExcludeFields {
-			for key, val := range row {
-				if strings.ToLower(field) != strings.ToLower(key) {
-					data := map[string]any{
-						e.dest.KeyField:   key,
-						e.dest.ValueField: val,
+	for key, val := range row {
+		if len(e.dest.ExcludeFields) > 0 {
+			data := make(map[string]any)
+			found := false
+			if !str.Contains(e.dest.ExcludeFields, key) {
+				found = true
+				data[e.dest.KeyField] = key
+				if val == nil {
+					data[e.dest.ValueField] = nil
+				} else {
+					data[e.dest.ValueField] = fmt.Sprintf("%v", val)
+				}
+				for _, f := range srcFields {
+					if e.dest.StoreDataType && strings.ToLower(f.Name) == strings.ToLower(key) {
+						data[e.dest.DataTypeField] = strings.ToLower(e.destCon.GetDataTypeMap(f.DataType))
 					}
-					for _, f := range srcFields {
-						if e.dest.StoreDataType && strings.ToLower(f.Name) == strings.ToLower(key) {
-							data[e.dest.DataTypeField] = strings.ToLower(e.destCon.GetDataTypeMap(f.DataType))
-						}
-					}
-					rows = append(rows, data)
 				}
 			}
-		}
-	} else {
-		for key, val := range row {
-			data := map[string]any{
-				e.dest.KeyField:   key,
-				e.dest.ValueField: val,
+			if found {
+				for _, f := range e.dest.IncludeFields {
+					if v, k := row[f]; k {
+						data[f] = v
+					}
+				}
+				for k, v := range e.dest.ExtraValues {
+					data[k] = v
+				}
+				rows = append(rows, data)
+			}
+		} else {
+			data := make(map[string]any)
+			data[e.dest.KeyField] = key
+			if val == nil {
+				data[e.dest.ValueField] = nil
+			} else {
+				data[e.dest.ValueField] = fmt.Sprintf("%v", val)
 			}
 			for _, f := range srcFields {
 				if e.dest.StoreDataType && strings.ToLower(f.Name) == strings.ToLower(key) {
-					data[e.dest.DataTypeField] = e.destCon.GetDataTypeMap(f.DataType)
+					data[e.dest.DataTypeField] = strings.ToLower(e.destCon.GetDataTypeMap(f.DataType))
 				}
+			}
+			for _, f := range e.dest.IncludeFields {
+				if v, k := row[f]; k {
+					data[f] = v
+				}
+			}
+			for k, v := range e.dest.ExtraValues {
+				data[k] = v
 			}
 			rows = append(rows, data)
 		}
 	}
-
 	return rows, nil
 }
 

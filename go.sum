@@ -6,10 +6,6 @@ github.com/AzureAD/microsoft-authentication-library-for-go v0.8.1/go.mod h1:4qFo
 github.com/bytedance/gopkg v0.0.0-20230512060433-7f5f1dee0b1e h1:fdOCZyxgrSYNPCiLmaxniNeSkQMpC+z/t8R06g8nwS8=
 github.com/bytedance/gopkg v0.0.0-20230512060433-7f5f1dee0b1e/go.mod h1:5tCTcGDVBC/YUpwmVUI14jYgkemT1CAeUyQe0J5DLUs=
 github.com/bytedance/sonic v1.5.0/go.mod h1:ED5hyg4y6t3/9Ku1R6dU/4KyJ48DZ4jPhfY1O2AihPM=
-github.com/bytedance/sonic v1.8.8 h1:Kj4AYbZSeENfyXicsYppYKO0K2YWab+i2UTSY7Ukz9Q=
-github.com/bytedance/sonic v1.8.8/go.mod h1:i736AoUSYt75HyZLoJW9ERYxcy6eaN6h4BZXU064P/U=
-github.com/bytedance/sonic v1.8.10 h1:XFSQg4/rwpQnNWSybNDr8oz6QtQY9uRGfRKDVWVsvP8=
-github.com/bytedance/sonic v1.8.10/go.mod h1:i736AoUSYt75HyZLoJW9ERYxcy6eaN6h4BZXU064P/U=
 github.com/bytedance/sonic v1.9.0 h1:iwLYBds8bYtzwOX7kmdYwtS+aY2GgekVoIs2/IxR0tM=
 github.com/bytedance/sonic v1.9.0/go.mod h1:i736AoUSYt75HyZLoJW9ERYxcy6eaN6h4BZXU064P/U=
 github.com/chenzhuoyu/base64x v0.0.0-20211019084208-fb5309c8db06/go.mod h1:DH46F32mSOjUmXrMHnKwZdA8wcEefY7UVqBKYGjpdQY=
@@ -66,7 +62,6 @@ github.com/klauspost/cpuid/v2 v2.2.4/go.mod h1:RVVoqg1df56z8g3pUjL/3lE5UfnlrJX8t
 github.com/kylelemons/godebug v1.1.0/go.mod h1:9/0rRGxNHcop5bhtWyNeEfOS8JIWk580+fNqagV/RAw=
 github.com/lib/pq v1.10.9 h1:YXG7RB+JIjhP29X+OtkiDnYaXQwpS4JEWq7dtCCRUEw=
 github.com/lib/pq v1.10.9/go.mod h1:AlVN5x4E4T544tWzH6hKfbfQvm3HdbOxrmggDNAPY9o=
-github.com/microsoft/go-mssqldb v0.21.0 h1:p2rpHIL7TlSv1QrbXJUAcbyRKnIT0C9rRkH2E4OjLn8=
 github.com/microsoft/go-mssqldb v0.21.0/go.mod h1:+4wZTUnz/SV6nffv+RRRB/ss8jPng5Sho2SmM1l2ts4=
 github.com/microsoft/go-mssqldb v1.0.0 h1:k2p2uuG8T5T/7Hp7/e3vMGTnnR0sU4h8d1CcC71iLHU=
 github.com/microsoft/go-mssqldb v1.0.0/go.mod h1:+4wZTUnz/SV6nffv+RRRB/ss8jPng5Sho2SmM1l2ts4=
@@ -76,16 +71,10 @@ github.com/oarkflow/db v0.0.0-20230322151631-c3150713c9f8 h1:L8W8+XUCO1mNH0UCCnI
 github.com/oarkflow/db v0.0.0-20230322151631-c3150713c9f8/go.mod h1:fR5q/r/gu0q2nAhjJZW8NmRQYDq2HIJ5iv1bz9YOuJQ=
 github.com/oarkflow/errors v0.0.6 h1:qTBzVblrX6bFbqYLfatsrZHMBPchOZiIE3pfVzh1+k8=
 github.com/oarkflow/errors v0.0.6/go.mod h1:UETn0Q55PJ+YUbpR4QImIoBavd6QvJtyW/oeTT7ghZM=
-github.com/oarkflow/frame v0.0.44 h1:ZrmtlisnJ+O/TPUCKFjaATpa8dvKlbJSyjWtQn36SrM=
-github.com/oarkflow/frame v0.0.44/go.mod h1:GXOrAqOTFYp0+/F9PrKqfLXPpqX9uOUA/HPZb1Agwaw=
 github.com/oarkflow/frame v0.0.47 h1:10F1z2OSh2UjIgpiimKSdEnCL2Hd+pIyQSYMqs2xe64=
 github.com/oarkflow/frame v0.0.47/go.mod h1:NW6FouW3AvoQmqK26eu4xFHtzjXQRe5djjJOk/QmJ1E=
 github.com/oarkflow/log v1.0.73 h1:UQW1uMaKJBHr7EcLA5yZGbiO7aXHmtFi23TyC/o0diQ=
 github.com/oarkflow/log v1.0.73/go.mod h1:XTPYB9X9MZGeL1wFeG+Of8NKXTuS4hWR1tAJTxS0img=
-github.com/oarkflow/metadata v0.0.24 h1:O+xVDJltYrxAHODzq6A6w1O3KI6bi/xYqrKDvT4Br5s=
-github.com/oarkflow/metadata v0.0.24/go.mod h1:/imtSuCnkSfIu8p5X8LkEdMsV67HbuGlQJ97bivgJPE=
-github.com/oarkflow/metadata v0.0.25 h1:0K9bZLMQuDpG1G3iLQxKTky8671qegD1FRPJYHO3u2k=
-github.com/oarkflow/metadata v0.0.25/go.mod h1:/imtSuCnkSfIu8p5X8LkEdMsV67HbuGlQJ97bivgJPE=
 github.com/oarkflow/metadata v0.0.26 h1:GAwgR8FuUXWIiziPXRca3fUm6Jydf6EwB0OLYB8O9aU=
 github.com/oarkflow/metadata v0.0.26/go.mod h1:/9oFyW5lMtWFddlPdAaYwANW3+sOM5KzjCQ5EUTH9CQ=
 github.com/oarkflow/pkg v0.0.57 h1:tQ6J4OFG4NzPfv+KAQxv1e/8HQ6abJxft7jnjcERsQg=
@@ -100,6 +89,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/puzpuzpuz/xsync v1.5.2 h1:yRAP4wqSOZG+/4pxJ08fPTwrfL0IzE/LKQ/cw509qGY=
 github.com/puzpuzpuz/xsync v1.5.2/go.mod h1:K98BYhX3k1dQ2M63t1YNVDanbwUPmBCAhNmVrrxfiGg=
+github.com/sourcegraph/conc v0.2.0 h1:96VpOCAtXDCQ8Oycz0ftHqdPyMi8w12ltN4L2noYg7s=
+github.com/sourcegraph/conc v0.2.0/go.mod h1:8lmPpTLA0hsWqw4lw7wS1e694U2tMjRrc1Asvupb4QM=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.4.0/go.mod h1:YvHI0jy2hoMjB+UWwv71VJQ9isScKT/TqJzVSSt89Yw=
 github.com/stretchr/objx v0.5.0/go.mod h1:Yh+to48EsGEfYuaHDzXPcE3xhTkx73EhmCGUpEOglKo=
