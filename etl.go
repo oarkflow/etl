@@ -26,8 +26,14 @@ type Source struct {
 }
 
 type Destination struct {
-	Name string
-	Type string
+	Name          string
+	Type          string
+	KeyField      string
+	ValueField    string
+	DataTypeField string
+	ExcludeFields []string
+	KeyValueTable bool
+	StoreDataType bool
 }
 
 type Config struct {
@@ -37,6 +43,12 @@ type Config struct {
 	CloneTables []string
 	CloneSource bool
 	Persist     bool
+}
+
+type Page struct {
+	Last   bool
+	Offset int64
+	Limit  int
 }
 
 type ETL struct {
@@ -95,7 +107,7 @@ func (e *ETL) ProcessPayload(payload []map[string]any) ([]map[string]any, error)
 
 func (e *ETL) process(batch int64, data []map[string]any) ([]map[string]any, error) {
 	var err error
-	var failedData []map[string]any
+	var failedData, payload []map[string]any
 	for _, filter := range e.filters {
 		d, err := filter.Apply(data)
 		if err != nil {
@@ -130,7 +142,29 @@ func (e *ETL) process(batch int64, data []map[string]any) ([]map[string]any, err
 				fixFieldType(row, field)
 			}
 		}
+		if e.dest.KeyValueTable {
+			keyValueData, err := e.processKeyValueTable(row)
+			if err != nil {
+				return nil, err
+			}
+			if len(keyValueData) > 0 {
+				payload = append(payload, keyValueData...)
+			}
+		}
 	}
+	if !e.dest.KeyValueTable {
+		return e.storeData(batch, data)
+	}
+	if len(payload) > 0 {
+		fmt.Println(payload)
+		return e.storeData(batch, payload)
+	}
+	return nil, nil
+}
+
+func (e *ETL) storeData(batch int64, data []map[string]any) ([]map[string]any, error) {
+	var err error
+	var failedData []map[string]any
 	if len(data) > 0 {
 		err = e.destCon.Store(e.dest.Name, data)
 		if err != nil {
@@ -149,10 +183,54 @@ func (e *ETL) process(batch int64, data []map[string]any) ([]map[string]any, err
 	return failedData, nil
 }
 
-type Page struct {
-	Last   bool
-	Offset int64
-	Limit  int
+func (e *ETL) processKeyValueTable(row map[string]any) ([]map[string]any, error) {
+	if e.dest.KeyField == "" {
+		e.dest.KeyField = "key"
+	}
+	if e.dest.ValueField == "" {
+		e.dest.ValueField = "value"
+	}
+	if e.dest.StoreDataType && e.dest.DataTypeField == "" {
+		e.dest.DataTypeField = "value_type"
+	}
+	var rows []map[string]any
+	srcFields, err := e.srcCon.GetFields(e.src.Name)
+	if err != nil {
+		return nil, err
+	}
+	if len(e.dest.ExcludeFields) > 0 {
+		for _, field := range e.dest.ExcludeFields {
+			for key, val := range row {
+				if strings.ToLower(field) != strings.ToLower(key) {
+					data := map[string]any{
+						e.dest.KeyField:   key,
+						e.dest.ValueField: val,
+					}
+					for _, f := range srcFields {
+						if e.dest.StoreDataType && strings.ToLower(f.Name) == strings.ToLower(key) {
+							data[e.dest.DataTypeField] = strings.ToLower(e.destCon.GetDataTypeMap(f.DataType))
+						}
+					}
+					rows = append(rows, data)
+				}
+			}
+		}
+	} else {
+		for key, val := range row {
+			data := map[string]any{
+				e.dest.KeyField:   key,
+				e.dest.ValueField: val,
+			}
+			for _, f := range srcFields {
+				if e.dest.StoreDataType && strings.ToLower(f.Name) == strings.ToLower(key) {
+					data[e.dest.DataTypeField] = e.destCon.GetDataTypeMap(f.DataType)
+				}
+			}
+			rows = append(rows, data)
+		}
+	}
+
+	return rows, nil
 }
 
 func (e *ETL) processFailedData(payload map[int64][]map[string]any) ([]map[string]any, error) {

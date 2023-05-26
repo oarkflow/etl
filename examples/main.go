@@ -13,7 +13,8 @@ import (
 
 func main() {
 	// migrateDB()
-	tableMigration()
+	// tableMigration()
+	settingsTableMigration()
 	// etlWithFilter()
 }
 
@@ -35,6 +36,23 @@ func etlWithFilter() {
 	e.AddFilters(r)
 	e.AddTransformer(mapper)
 	fmt.Println(e.ProcessPayload(d))
+}
+
+func settingsTableMigration() {
+	source, destination := conn()
+	instance := etl.New(etl.Config{CloneSource: false})
+	instance.AddSource(source, etl.Source{Name: "tbl_work_item"})
+	instance.AddDestination(destination, etl.Destination{
+		Name:          "work_item_settings",
+		Type:          "table",
+		ExcludeFields: []string{"facility_id", "work_item_type_id", "work_item_uid"},
+		KeyValueTable: true,
+		StoreDataType: true,
+	})
+	_, err := instance.Process()
+	if err != nil {
+		panic(err)
+	}
 }
 
 func tableMigration() {

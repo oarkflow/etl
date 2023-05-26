@@ -4,14 +4,14 @@ go 1.20
 
 require (
 	github.com/oarkflow/errors v0.0.6
-	github.com/oarkflow/metadata v0.0.24
+	github.com/oarkflow/metadata v0.0.26
 	github.com/oarkflow/pkg v0.0.57
 	gorm.io/gorm v1.25.1
 )
 
 require (
 	github.com/bytedance/gopkg v0.0.0-20230512060433-7f5f1dee0b1e // indirect
-	github.com/bytedance/sonic v1.8.8 // indirect
+	github.com/bytedance/sonic v1.9.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/go-sql-driver/mysql v1.7.1 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect
@@ -26,9 +26,9 @@ require (
 	github.com/klauspost/compress v1.16.5 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/lib/pq v1.10.9 // indirect
-	github.com/microsoft/go-mssqldb v0.21.0 // indirect
+	github.com/microsoft/go-mssqldb v1.0.0 // indirect
 	github.com/oarkflow/db v0.0.0-20230322151631-c3150713c9f8 // indirect
-	github.com/oarkflow/frame v0.0.44 // indirect
+	github.com/oarkflow/frame v0.0.47 // indirect
 	github.com/oarkflow/log v1.0.73 // indirect
 	github.com/oarkflow/protocol v0.0.2 // indirect
 	github.com/oarkflow/xid v1.2.5 // indirect
