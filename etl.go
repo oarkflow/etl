@@ -202,55 +202,30 @@ func (e *ETL) processKeyValueTable(row map[string]any) ([]map[string]any, error)
 		return nil, err
 	}
 	for key, val := range row {
-		if len(e.dest.ExcludeFields) > 0 {
-			data := make(map[string]any)
-			found := false
-			if !str.Contains(e.dest.ExcludeFields, key) {
-				found = true
-				data[e.dest.KeyField] = key
-				if val == nil {
-					data[e.dest.ValueField] = nil
-				} else {
-					data[e.dest.ValueField] = fmt.Sprintf("%v", val)
-				}
-				for _, f := range srcFields {
-					if e.dest.StoreDataType && strings.ToLower(f.Name) == strings.ToLower(key) {
-						data[e.dest.DataTypeField] = strings.ToLower(e.destCon.GetDataTypeMap(f.DataType))
-					}
-				}
+		data := make(map[string]any)
+		for _, f := range e.dest.IncludeFields {
+			if v, k := row[f]; k {
+				data[f] = v
 			}
-			if found {
-				for _, f := range e.dest.IncludeFields {
-					if v, k := row[f]; k {
-						data[f] = v
-					}
-				}
-				for k, v := range e.dest.ExtraValues {
-					data[k] = v
-				}
-				rows = append(rows, data)
-			}
+		}
+		for k, v := range e.dest.ExtraValues {
+			data[k] = v
+		}
+		data[e.dest.KeyField] = key
+		if val == nil {
+			data[e.dest.ValueField] = nil
 		} else {
-			data := make(map[string]any)
-			data[e.dest.KeyField] = key
-			if val == nil {
-				data[e.dest.ValueField] = nil
-			} else {
-				data[e.dest.ValueField] = fmt.Sprintf("%v", val)
+			data[e.dest.ValueField] = fmt.Sprintf("%v", val)
+		}
+		for _, f := range srcFields {
+			if e.dest.StoreDataType && strings.ToLower(f.Name) == strings.ToLower(key) {
+				data[e.dest.DataTypeField] = strings.ToLower(e.destCon.GetDataTypeMap(f.DataType))
 			}
-			for _, f := range srcFields {
-				if e.dest.StoreDataType && strings.ToLower(f.Name) == strings.ToLower(key) {
-					data[e.dest.DataTypeField] = strings.ToLower(e.destCon.GetDataTypeMap(f.DataType))
-				}
-			}
-			for _, f := range e.dest.IncludeFields {
-				if v, k := row[f]; k {
-					data[f] = v
-				}
-			}
-			for k, v := range e.dest.ExtraValues {
-				data[k] = v
-			}
+		}
+		if len(e.dest.ExcludeFields) > 0 && !str.Contains(e.dest.ExcludeFields, key) {
+			delete(data, key)
+		}
+		if _, ok := data[e.dest.DataTypeField]; ok {
 			rows = append(rows, data)
 		}
 	}

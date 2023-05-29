@@ -10,6 +10,8 @@ import (
 
 type Config struct {
 	FieldMaps           map[string]string
+	Lookups             map[string][]map[string]any
+	LookupFunc          func(data string, key string, value any) map[string]any
 	KeepUnmatchedFields bool
 }
 
@@ -56,3 +58,31 @@ func New(cfg *Config) *Mapper {
 		cfg: cfg,
 	}
 }
+
+/*
+func init() {
+	evaluate.AddCustomOperator("lookupIn", lookupIn)
+}
+
+func lookupIn(ctx evaluate.EvalContext) (interface{}, error) {
+	if err := ctx.CheckArgCount(3); err != nil {
+		return nil, err
+	}
+	arg1, err := ctx.Arg(0)
+	if err != nil {
+		return nil, err
+	}
+	arg2, err := ctx.Arg(1)
+	if err != nil {
+		return nil, err
+	}
+	arg3, err := ctx.Arg(2)
+	if err != nil {
+		return nil, err
+	}
+	lookup := arg1.(string)
+	key := arg2.(string)
+	value := arg3.(string)
+	return nil, nil
+}
+*/

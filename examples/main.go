@@ -52,7 +52,7 @@ func settingsTableMigration() {
 	instance.AddDestination(destination, etl.Destination{
 		Name:          "work_item_settings",
 		Type:          "table",
-		ExcludeFields: []string{"facility_id", "work_item_type_id", "work_item_uid", "work_item_id"},
+		ExcludeFields: []string{"facility_id", "work_item_type_id", "work_item_uid"},
 		IncludeFields: []string{"work_item_id"},
 		ExtraValues: map[string]any{
 			"wi_setting_order_index": 1,
@@ -102,7 +102,7 @@ func migrateDB() {
 func conn() (metadata.DataSource, metadata.DataSource) {
 	cfg1 := metadata.Config{
 		Host:          "localhost",
-		Port:          3307,
+		Port:          3306,
 		Driver:        "mysql",
 		Username:      "root",
 		Password:      "root",
