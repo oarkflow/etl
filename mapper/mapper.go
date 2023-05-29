@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	"github.com/oarkflow/pkg/dipper"
 	"strings"
 
 	"github.com/oarkflow/pkg/evaluate"
@@ -11,7 +12,6 @@ import (
 type Config struct {
 	FieldMaps           map[string]string
 	Lookups             map[string][]map[string]any
-	LookupFunc          func(data string, key string, value any) map[string]any
 	KeepUnmatchedFields bool
 }
 
@@ -53,19 +53,8 @@ func (m *Mapper) Transform(data etl.Data) error {
 	return nil
 }
 
-func New(cfg *Config) *Mapper {
-	return &Mapper{
-		cfg: cfg,
-	}
-}
-
-/*
-func init() {
-	evaluate.AddCustomOperator("lookupIn", lookupIn)
-}
-
-func lookupIn(ctx evaluate.EvalContext) (interface{}, error) {
-	if err := ctx.CheckArgCount(3); err != nil {
+func (m *Mapper) lookupIn(ctx evaluate.EvalContext) (interface{}, error) {
+	if err := ctx.CheckArgCount(4); err != nil {
 		return nil, err
 	}
 	arg1, err := ctx.Arg(0)
@@ -80,9 +69,44 @@ func lookupIn(ctx evaluate.EvalContext) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	arg4, err := ctx.Arg(3)
+	if err != nil {
+		return nil, err
+	}
 	lookup := arg1.(string)
 	key := arg2.(string)
-	value := arg3.(string)
+	value := arg3
+	fieldToRetrieve := arg4.(string)
+	if len(m.cfg.Lookups) > 0 {
+		if rows, ok := m.cfg.Lookups[lookup]; ok {
+			data := dipper.FilterSlice(rows, ".[]."+key, []any{value})
+			switch data := data.(type) {
+			case error:
+				return nil, data
+			case []any:
+				if len(data) > 0 {
+					d := data[0]
+					switch d := d.(type) {
+					case map[string]any:
+						return d[fieldToRetrieve], nil
+					}
+
+				}
+			case []map[string]any:
+				if len(data) > 0 {
+					d := data[0]
+					return d[fieldToRetrieve], nil
+				}
+			}
+		}
+	}
 	return nil, nil
 }
-*/
+
+func New(cfg *Config) *Mapper {
+	m := &Mapper{
+		cfg: cfg,
+	}
+	evaluate.AddCustomOperator("lookupIn", m.lookupIn)
+	return m
+}

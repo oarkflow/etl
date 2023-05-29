@@ -41,13 +41,33 @@ func etlWithFilter() {
 func settingsTableMigration() {
 	mapper := mapper.New(&mapper.Config{
 		FieldMaps: map[string]string{
-			"work_item_id": "work_item_uid",
+			"user_id": "{{lookupIn('users', 'user_id', [user_uid], 'user_id')}}",
 		},
 		KeepUnmatchedFields: true,
+		Lookups: map[string][]map[string]any{
+			"users": {
+				{
+					"user_id":            37,
+					"user_email_address": "abc@example.com",
+				},
+				{
+					"user_id":            33,
+					"user_email_address": "abc1@example.com",
+				},
+				{
+					"user_id":            21,
+					"user_email_address": "abc2@example.com",
+				},
+				{
+					"user_id":            35,
+					"user_email_address": "abc2@example.com",
+				},
+			},
+		},
 	})
 	source, destination := conn()
 	instance := etl.New(etl.Config{CloneSource: false})
-	instance.AddSource(source, etl.Source{Name: "tbl_work_item"})
+	instance.AddSource(source, etl.Source{Name: "tbl_user_setting"})
 	instance.AddTransformer(mapper)
 	instance.AddDestination(destination, etl.Destination{
 		Name:          "work_item_settings",
