@@ -49,9 +49,10 @@ type Config struct {
 }
 
 type Page struct {
-	Last   bool
-	Offset int64
-	Limit  int
+	Last    bool
+	Offset  int64
+	Limit   int
+	Filters map[string]any
 }
 
 type ETL struct {
@@ -254,7 +255,7 @@ func (e *ETL) processFailedData(payload map[int64][]map[string]any) ([]map[strin
 	return failedData, nil
 }
 
-func (e *ETL) Process() (map[int64][]map[string]any, error) {
+func (e *ETL) Process(filter ...map[string]any) (map[int64][]map[string]any, error) {
 	failedData := make(map[int64][]map[string]any)
 	if e.dest.Name == "" {
 		e.dest.Name = e.src.Name
@@ -267,7 +268,10 @@ func (e *ETL) Process() (map[int64][]map[string]any, error) {
 	}
 	var totalData, failedRows int
 	page := &Page{Limit: e.cfg.BatchSize}
-	fmt.Println("Processing migration for", e.src.Name)
+	if len(filter) > 0 {
+		page.Filters = filter[0]
+	}
+	fmt.Println("Processing migration for", e.src.Name, "to", e.dest.Name)
 	for !page.Last {
 		offset := page.Offset
 		data, err := e.getData(page)
@@ -297,6 +301,14 @@ func (e *ETL) getData(page *Page) ([]map[string]any, error) {
 	fields, _ := e.srcCon.GetFields(e.src.Name)
 	filter := make(map[string]any)
 	sql := fmt.Sprintf("SELECT * FROM %s", e.src.Name)
+	if len(page.Filters) > 0 {
+		var condition []string
+		for k, v := range page.Filters {
+			filter[k] = v
+			condition = append(condition, fmt.Sprintf("%s=@%s", k, k))
+		}
+		sql += " WHERE " + strings.Join(condition, ", ")
+	}
 	var field *metadata.Field
 	for _, f := range fields {
 		if strings.ToLower(f.DataType) == "serial" || strings.ToUpper(f.Extra) == "AUTO_INCREMENT" {

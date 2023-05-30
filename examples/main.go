@@ -14,8 +14,16 @@ import (
 func main() {
 	// migrateDB()
 	// tableMigration()
-	settingsTableMigration()
+	entityMigration()
+	// settingsTableMigration()
 	// etlWithFilter()
+	// testRawSqlWithMapFilter()
+}
+
+func testRawSqlWithMapFilter() {
+	src, _ := conn()
+	src.Connect()
+	fmt.Println(src.GetRawCollection("SELECT * FROM tbl_user LIMIT 1", map[string]any{"user_email_address": "spbaniya@deerwalk.com"}))
 }
 
 func etlWithFilter() {
@@ -105,6 +113,33 @@ func tableMigration() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func entityMigration() {
+	source, destination := conn()
+
+	e := etl.New(etl.Config{CloneSource: false})
+	e.AddSource(source, etl.Source{Name: "tbl_work_item"})
+	e.AddDestination(destination, etl.Destination{Name: "work_items"})
+
+	mapper := mapper.New(&mapper.Config{
+		FieldMaps: map[string]string{
+			"work_item_uid": "work_item_uid",
+			"charge_type":   "charge_type",
+			"code":          "code",
+			"no_charge":     "no_charge",
+		},
+		KeepUnmatchedFields: false,
+	})
+
+	r1 := etl.New(etl.Config{CloneSource: true})
+	r1.AddSource(source, etl.Source{Name: "tbl_work_item_em_level"})
+	r1.AddTransformer(mapper)
+	r1.AddDestination(destination, etl.Destination{Name: "work_item_em_levels"})
+
+	entity := etl.NewEntity(e, "work_item_uid", false)
+	entity.AddRelation(r1, "work_item_uid")
+	fmt.Println(entity.Process(29))
 }
 
 func migrateDB() {
