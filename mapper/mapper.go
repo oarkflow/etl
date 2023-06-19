@@ -1,9 +1,9 @@
 package mapper
 
 import (
-	"github.com/oarkflow/pkg/dipper"
 	"strings"
 
+	"github.com/oarkflow/pkg/dipper"
 	"github.com/oarkflow/pkg/evaluate"
 
 	"github.com/oarkflow/etl"
@@ -11,7 +11,7 @@ import (
 
 type Config struct {
 	FieldMaps           map[string]string
-	Lookups             map[string][]map[string]any
+	Lookups             any
 	KeepUnmatchedFields bool
 }
 
@@ -27,7 +27,7 @@ func (m *Mapper) Transform(data etl.Data) error {
 	switch data := data.(type) {
 	case map[string]any:
 		var fields []string
-		for f, _ := range data {
+		for f := range data {
 			fields = append(fields, f)
 		}
 		for dest, src := range m.cfg.FieldMaps {
@@ -43,7 +43,7 @@ func (m *Mapper) Transform(data etl.Data) error {
 			}
 		}
 		if !m.cfg.KeepUnmatchedFields {
-			for k, _ := range data {
+			for k := range data {
 				if _, ok := m.cfg.FieldMaps[k]; !ok {
 					delete(data, k)
 				}
@@ -77,25 +77,27 @@ func (m *Mapper) lookupIn(ctx evaluate.EvalContext) (interface{}, error) {
 	key := arg2.(string)
 	value := arg3
 	fieldToRetrieve := arg4.(string)
-	if len(m.cfg.Lookups) > 0 {
-		if rows, ok := m.cfg.Lookups[lookup]; ok {
-			data := dipper.FilterSlice(rows, ".[]."+key, []any{value})
-			switch data := data.(type) {
-			case error:
-				return nil, data
-			case []any:
-				if len(data) > 0 {
-					d := data[0]
-					switch d := d.(type) {
-					case map[string]any:
+	if m.cfg.Lookups != nil {
+		switch lookupData := m.cfg.Lookups.(type) {
+		case map[string]any:
+			if rows, ok := lookupData[lookup]; ok {
+				data := dipper.FilterSlice(rows, ".[]."+key, []any{value})
+				switch data := data.(type) {
+				case error:
+					return nil, data
+				case []any:
+					if len(data) > 0 {
+						d := data[0]
+						switch d := d.(type) {
+						case map[string]any:
+							return d[fieldToRetrieve], nil
+						}
+					}
+				case []map[string]any:
+					if len(data) > 0 {
+						d := data[0]
 						return d[fieldToRetrieve], nil
 					}
-
-				}
-			case []map[string]any:
-				if len(data) > 0 {
-					d := data[0]
-					return d[fieldToRetrieve], nil
 				}
 			}
 		}
