@@ -1,7 +1,9 @@
 package mapper
 
 import (
+	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/oarkflow/pkg/dipper"
 	"github.com/oarkflow/pkg/evaluate"
@@ -16,7 +18,9 @@ type Config struct {
 }
 
 type Mapper struct {
-	cfg *Config
+	cfg         *Config
+	lookupCache map[string]map[string]any
+	mu          *sync.RWMutex
 }
 
 func (m *Mapper) Name() string {
@@ -54,6 +58,8 @@ func (m *Mapper) Transform(data etl.Data) error {
 }
 
 func (m *Mapper) lookupIn(ctx evaluate.EvalContext) (interface{}, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	if err := ctx.CheckArgCount(4); err != nil {
 		return nil, err
 	}
@@ -77,6 +83,12 @@ func (m *Mapper) lookupIn(ctx evaluate.EvalContext) (interface{}, error) {
 	key := arg2.(string)
 	value := arg3
 	fieldToRetrieve := arg4.(string)
+	k := fmt.Sprintf("%s.%v.%s", key, value, fieldToRetrieve)
+	if cache, exists := m.lookupCache[lookup]; exists {
+		if data, exists := cache[k]; exists {
+			return data, nil
+		}
+	}
 	if m.cfg.Lookups != nil {
 		switch lookupData := m.cfg.Lookups.(type) {
 		case map[string]any:
@@ -90,12 +102,14 @@ func (m *Mapper) lookupIn(ctx evaluate.EvalContext) (interface{}, error) {
 						d := data[0]
 						switch d := d.(type) {
 						case map[string]any:
+							m.lookupCache[lookup][k] = d[fieldToRetrieve]
 							return d[fieldToRetrieve], nil
 						}
 					}
 				case []map[string]any:
 					if len(data) > 0 {
 						d := data[0]
+						m.lookupCache[lookup][k] = d[fieldToRetrieve]
 						return d[fieldToRetrieve], nil
 					}
 				}
@@ -107,7 +121,16 @@ func (m *Mapper) lookupIn(ctx evaluate.EvalContext) (interface{}, error) {
 
 func New(cfg *Config) *Mapper {
 	m := &Mapper{
-		cfg: cfg,
+		cfg:         cfg,
+		lookupCache: make(map[string]map[string]any),
+	}
+	if m.cfg.Lookups != nil {
+		switch lookupData := m.cfg.Lookups.(type) {
+		case map[string]any:
+			for entity, _ := range lookupData {
+				m.lookupCache[entity] = make(map[string]any)
+			}
+		}
 	}
 	evaluate.AddCustomOperator("lookupIn", m.lookupIn)
 	return m
