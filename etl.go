@@ -213,14 +213,23 @@ func (e *ETL) processKeyValueTable(row map[string]any) ([]map[string]any, error)
 			data[k] = v
 		}
 		data[e.dest.KeyField] = key
+		strVal := fmt.Sprintf("%v", val)
 		if val == nil {
 			data[e.dest.ValueField] = nil
 		} else {
-			data[e.dest.ValueField] = fmt.Sprintf("%v", val)
+			data[e.dest.ValueField] = strVal
 		}
 		for _, f := range srcFields {
 			if e.dest.StoreDataType && strings.ToLower(f.Name) == strings.ToLower(key) {
 				data[e.dest.DataTypeField] = strings.ToLower(e.destCon.GetDataTypeMap(f.DataType))
+			}
+			switch f.DataType {
+			case "tinyint":
+				if strVal == "0" {
+					data[e.dest.ValueField] = false
+				} else if strVal == "1" {
+					data[e.dest.ValueField] = true
+				}
 			}
 		}
 		if len(e.dest.ExcludeFields) > 0 && !str.Contains(e.dest.ExcludeFields, key) {
