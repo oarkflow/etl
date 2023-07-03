@@ -226,9 +226,9 @@ func (e *ETL) processKeyValueTable(row map[string]any) ([]map[string]any, error)
 			switch f.DataType {
 			case "tinyint":
 				if strVal == "0" {
-					data[e.dest.ValueField] = false
+					data[e.dest.ValueField] = "false"
 				} else if strVal == "1" {
-					data[e.dest.ValueField] = true
+					data[e.dest.ValueField] = "true"
 				}
 			}
 		}
