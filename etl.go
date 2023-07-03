@@ -223,8 +223,8 @@ func (e *ETL) processKeyValueTable(row map[string]any) ([]map[string]any, error)
 			if e.dest.StoreDataType && strings.ToLower(f.Name) == strings.ToLower(key) {
 				data[e.dest.DataTypeField] = strings.ToLower(e.destCon.GetDataTypeMap(f.DataType))
 			}
-			switch f.DataType {
-			case "tinyint":
+			switch data[e.dest.DataTypeField] {
+			case "boolean":
 				if strVal == "0" {
 					data[e.dest.ValueField] = "false"
 				} else if strVal == "1" {
