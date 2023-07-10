@@ -123,6 +123,7 @@ func New(cfg *Config) *Mapper {
 	m := &Mapper{
 		cfg:         cfg,
 		lookupCache: make(map[string]map[string]any),
+		mu:          &sync.RWMutex{},
 	}
 	if m.cfg.Lookups != nil {
 		switch lookupData := m.cfg.Lookups.(type) {

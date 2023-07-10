@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/oarkflow/errors v0.0.6
 	github.com/oarkflow/metadata v0.0.28
-	github.com/oarkflow/pkg v0.0.62
+	github.com/oarkflow/pkg v0.0.64
 	gorm.io/gorm v1.25.2
 )
 
@@ -23,7 +23,7 @@ require (
 	github.com/jackc/pgx/v5 v5.4.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/klauspost/compress v1.16.6 // indirect
+	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/microsoft/go-mssqldb v1.3.0 // indirect
@@ -35,11 +35,11 @@ require (
 	github.com/puzpuzpuz/xsync v1.5.2 // indirect
 	github.com/toorop/go-dkim v0.0.0-20201103131630-e1cd1a0a5208 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
-	github.com/xhit/go-simple-mail/v2 v2.13.0 // indirect
-	golang.org/x/arch v0.3.0 // indirect
-	golang.org/x/crypto v0.10.0 // indirect
-	golang.org/x/sys v0.9.0 // indirect
-	golang.org/x/text v0.10.0 // indirect
+	github.com/xhit/go-simple-mail/v2 v2.15.0 // indirect
+	golang.org/x/arch v0.4.0 // indirect
+	golang.org/x/crypto v0.11.0 // indirect
+	golang.org/x/sys v0.10.0 // indirect
+	golang.org/x/text v0.11.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gorm.io/driver/mysql v1.5.1 // indirect
