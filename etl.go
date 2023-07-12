@@ -159,6 +159,7 @@ func (e *ETL) process(batch int64, data []map[string]any) ([]map[string]any, err
 	if !e.dest.KeyValueTable {
 		return e.storeData(batch, data)
 	}
+
 	if len(payload) > 0 {
 		return e.storeData(batch, payload)
 	}
@@ -233,11 +234,11 @@ func (e *ETL) processKeyValueTable(row map[string]any) ([]map[string]any, error)
 			}
 		}
 		if len(e.dest.ExcludeFields) > 0 && !str.Contains(e.dest.ExcludeFields, key) {
-			delete(data, key)
+			if _, ok := data[e.dest.DataTypeField]; ok {
+				rows = append(rows, data)
+			}
 		}
-		if _, ok := data[e.dest.DataTypeField]; ok {
-			rows = append(rows, data)
-		}
+
 	}
 	return rows, nil
 }
