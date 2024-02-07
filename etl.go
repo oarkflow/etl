@@ -2,9 +2,10 @@ package etl
 
 import (
 	"fmt"
-	"github.com/oarkflow/pkg/str"
 	"strconv"
 	"strings"
+
+	"github.com/oarkflow/pkg/str"
 
 	"github.com/oarkflow/errors"
 	"github.com/oarkflow/metadata"
@@ -154,16 +155,18 @@ func (e *ETL) process(batch int64, data []map[string]any) ([]map[string]any, err
 			if len(keyValueData) > 0 {
 				payload = append(payload, keyValueData...)
 			}
+		} else {
+			payload = append(payload, row)
 		}
 	}
-	if !e.dest.KeyValueTable {
+	if !e.dest.KeyValueTable && e.destCon != nil {
 		return e.storeData(batch, data)
 	}
 
-	if len(payload) > 0 {
+	if len(payload) > 0 && e.destCon != nil {
 		return e.storeData(batch, payload)
 	}
-	return nil, nil
+	return payload, nil
 }
 
 func (e *ETL) storeData(batch int64, data []map[string]any) ([]map[string]any, error) {
@@ -172,7 +175,6 @@ func (e *ETL) storeData(batch int64, data []map[string]any) ([]map[string]any, e
 	if len(data) > 0 {
 		err = e.destCon.Store(e.dest.Name, data)
 		if err != nil {
-			panic(err)
 			if !errors.Is(err, gorm.ErrDuplicatedKey) {
 				failedData = append(failedData, data...)
 			} else {

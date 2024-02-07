@@ -14,9 +14,9 @@ import (
 func main() {
 	// migrateDB()
 	// tableMigration()
-	entityMigration()
+	// entityMigration()
 	// settingsTableMigration()
-	// etlWithFilter()
+	etlWithFilter()
 	// testRawSqlWithMapFilter()
 }
 
@@ -122,7 +122,7 @@ func entityMigration() {
 	e.AddSource(source, etl.Source{Name: "tbl_work_item"})
 	e.AddDestination(destination, etl.Destination{Name: "work_items"})
 
-	mapper := mapper.New(&mapper.Config{
+	mp := mapper.New(&mapper.Config{
 		FieldMaps: map[string]string{
 			"work_item_uid": "work_item_uid",
 			"charge_type":   "charge_type",
@@ -134,7 +134,7 @@ func entityMigration() {
 
 	r1 := etl.New(etl.Config{CloneSource: true})
 	r1.AddSource(source, etl.Source{Name: "tbl_work_item_em_level"})
-	r1.AddTransformer(mapper)
+	r1.AddTransformer(mp)
 	r1.AddDestination(destination, etl.Destination{Name: "work_item_em_levels"})
 
 	entity := etl.NewEntity(e, "work_item_uid", false)
