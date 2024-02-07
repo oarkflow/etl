@@ -15,19 +15,20 @@ import (
 
 // TableConfig contains the configuration for a single table migration.
 type TableConfig struct {
-	OldName             string            `json:"old_name" yaml:"old_name"`
-	NewName             string            `json:"new_name" yaml:"new_name"`
-	Query               string            `yaml:"query" json:"query"`
-	Migrate             bool              `json:"migrate" yaml:"migrate"`
-	KeepUnmatchedFields bool              `json:"keep_unmatched_fields" yaml:"keep_unmatched_fields"`
-	ExcludeFields       []string          `json:"exclude_fields" yaml:"exclude_fields"`
-	IncludeFields       []string          `json:"include_fields" yaml:"include_fields"`
-	ExtraValues         map[string]any    `json:"extra_values" yaml:"extra_values"`
-	KeyValueTable       bool              `json:"key_value_table" yaml:"key_value_table"`
-	StoreDataType       bool              `json:"store_data_type" yaml:"store_data_type"`
-	UpdateSequence      bool              `yaml:"update_sequence" json:"update_sequence"`
-	Mapping             map[string]string `json:"mapping" yaml:"mapping"`
-	Lookups             string            `json:"lookups" yaml:"lookups"`
+	OldName             string              `json:"old_name" yaml:"old_name"`
+	NewName             string              `json:"new_name" yaml:"new_name"`
+	Query               string              `yaml:"query" json:"query"`
+	Migrate             bool                `json:"migrate" yaml:"migrate"`
+	KeepUnmatchedFields bool                `json:"keep_unmatched_fields" yaml:"keep_unmatched_fields"`
+	ExcludeFields       []string            `json:"exclude_fields" yaml:"exclude_fields"`
+	IncludeFields       []string            `json:"include_fields" yaml:"include_fields"`
+	ExtraValues         map[string]any      `json:"extra_values" yaml:"extra_values"`
+	KeyValueTable       bool                `json:"key_value_table" yaml:"key_value_table"`
+	StoreDataType       bool                `json:"store_data_type" yaml:"store_data_type"`
+	UpdateSequence      bool                `yaml:"update_sequence" json:"update_sequence"`
+	Mapping             map[string]string   `json:"mapping" yaml:"mapping"`
+	MultipleMapping     []map[string]string `json:"multiple_mapping" yaml:"multiple_mapping"`
+	Lookups             string              `json:"lookups" yaml:"lookups"`
 }
 
 func FromYaml(srcConfig, dstConfig metadata.Config, tableBytes []byte) error {
@@ -66,6 +67,21 @@ func Data(srcConfig, dstConfig metadata.Config, tableList []TableConfig) error {
 				var allSettings []map[string]any
 				for _, data := range dataList {
 					mapping := make(map[string]any)
+					var commonMapping []map[string]any
+					for _, mp := range tableConfig.MultipleMapping {
+						tmp := make(map[string]any)
+						for k, v := range mp {
+							p, _ := evaluate.Parse(v, true)
+							pr := evaluate.NewEvalParams(data)
+							val, err := p.Eval(pr)
+							if err == nil {
+								tmp[k] = val
+							} else {
+								tmp[k] = v
+							}
+						}
+						commonMapping = append(commonMapping, tmp)
+					}
 					for k, v := range tableConfig.Mapping {
 						p, _ := evaluate.Parse(v, true)
 						pr := evaluate.NewEvalParams(data)
@@ -76,7 +92,21 @@ func Data(srcConfig, dstConfig metadata.Config, tableList []TableConfig) error {
 							mapping[k] = v
 						}
 					}
-					allSettings = append(allSettings, mapping)
+					if len(commonMapping) > 0 {
+						for _, cMap := range commonMapping {
+							dataToMap := make(map[string]any)
+							for k, v := range cMap {
+								dataToMap[k] = v
+							}
+							for k, v := range mapping {
+								dataToMap[k] = v
+							}
+							allSettings = append(allSettings, dataToMap)
+						}
+					} else {
+						allSettings = append(allSettings, mapping)
+					}
+
 				}
 				// insert all the settings into tableConfig.NewName
 				dConnector, err := destination.Connect()
