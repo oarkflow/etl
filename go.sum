@@ -94,10 +94,14 @@ github.com/oarkflow/frame v0.0.59 h1:wsy/1DP78Laevtpaz8w0rx3AmkgvIJ8/XPT5lqn3YL0
 github.com/oarkflow/frame v0.0.59/go.mod h1:R9wlEYYmtYQ4T+4PcJoZLKb+J1pVZlmDAhGUHVLF9ZU=
 github.com/oarkflow/json v0.0.4 h1:KXCe4EgzDeyj0X8kGRaUhVVSmg19FlhI1p+bE32g9kg=
 github.com/oarkflow/json v0.0.4/go.mod h1:nrVP+G2XazW4EMnQyNm8uaq8sZvsRYhxgbmIqZvlL7I=
+github.com/oarkflow/json v0.0.5 h1:iIGQDTh/CZtlV3PAKY3I9DfUQBDQjJ8usYYPA4OnNj4=
+github.com/oarkflow/json v0.0.5/go.mod h1:l/V+30ZSZxtYpcqTeilLyKHk4oDfpWi429QwTID3ITQ=
 github.com/oarkflow/log v1.0.74 h1:ZF+G7ZMO2bHRcNMVovqa3LwkzxsaQqhaFCe92Gwwhtg=
 github.com/oarkflow/log v1.0.74/go.mod h1:GjB0Np5m9DXTwlS2fpkH5jDsiTMYhD60aG/9UegLNvw=
 github.com/oarkflow/metadata v0.0.34 h1:zeLaC0uzAQL0LbsnAd2BG0iHc0zm2yhFV2IpXxV+a6Q=
 github.com/oarkflow/metadata v0.0.34/go.mod h1:PGIREu5yGbogESXqfXfxidVvBWkZGxLWciwAeKtD1qc=
+github.com/oarkflow/metadata v0.0.35 h1:eT/Lf336Sw02BsF8d6RkRRz1pEOit84U4qpNxthEOQg=
+github.com/oarkflow/metadata v0.0.35/go.mod h1:A6qhEbiqspQlKpo5tLKPKS/HF2b0VXfDPfouvXUtW9M=
 github.com/oarkflow/pkg v0.1.21 h1:Wc8H1q1ynE+gVb3PKhdwg381rWVAubGUUDfMD+mtEJc=
 github.com/oarkflow/pkg v0.1.21/go.mod h1:4ggeY87gQwkwhzaj26yvhC2WTXuEZVlsJN+vkyKjWvM=
 github.com/oarkflow/protocol v0.0.15 h1:/L3yEB2IIlnZdH62j6V/V1WLxakfXCe8p6thix4glGM=

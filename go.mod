@@ -6,7 +6,7 @@ replace gorm.io/gorm => github.com/sujit-baniya/gorm v0.0.3
 
 require (
 	github.com/oarkflow/errors v0.0.6
-	github.com/oarkflow/metadata v0.0.34
+	github.com/oarkflow/metadata v0.0.35
 	github.com/oarkflow/pkg v0.1.21
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/gorm v1.25.7
@@ -33,7 +33,7 @@ require (
 	github.com/microsoft/go-mssqldb v1.6.0 // indirect
 	github.com/oarkflow/db v0.0.1 // indirect
 	github.com/oarkflow/frame v0.0.59 // indirect
-	github.com/oarkflow/json v0.0.4 // indirect
+	github.com/oarkflow/json v0.0.5 // indirect
 	github.com/oarkflow/log v1.0.74 // indirect
 	github.com/oarkflow/protocol v0.0.15 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
