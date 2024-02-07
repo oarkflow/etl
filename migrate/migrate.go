@@ -17,6 +17,7 @@ import (
 type TableConfig struct {
 	OldName             string            `json:"old_name" yaml:"old_name"`
 	NewName             string            `json:"new_name" yaml:"new_name"`
+	Query               string            `yaml:"query" json:"query"`
 	Migrate             bool              `json:"migrate" yaml:"migrate"`
 	KeepUnmatchedFields bool              `json:"keep_unmatched_fields" yaml:"keep_unmatched_fields"`
 	ExcludeFields       []string          `json:"exclude_fields" yaml:"exclude_fields"`
@@ -53,9 +54,45 @@ func Data(srcConfig, dstConfig metadata.Config, tableList []TableConfig) error {
 
 	for _, tableConfig := range tableList {
 		if tableConfig.Migrate {
-			err := tableMigration(source, destination, tableConfig)
-			if err != nil {
-				return err
+			if tableConfig.Query != "" {
+				connector, err := source.Connect()
+				if err != nil {
+					return err
+				}
+				dataList, err := connector.GetRawCollection(tableConfig.Query)
+				if err != nil {
+					return err
+				}
+				var allSettings []map[string]any
+				for _, data := range dataList {
+					mapping := make(map[string]any)
+					for k, v := range tableConfig.Mapping {
+						p, _ := evaluate.Parse(v, true)
+						pr := evaluate.NewEvalParams(data)
+						val, err := p.Eval(pr)
+						if err == nil {
+							mapping[k] = val
+						} else {
+							mapping[k] = v
+						}
+					}
+					allSettings = append(allSettings, mapping)
+				}
+				// insert all the settings into tableConfig.NewName
+				dConnector, err := destination.Connect()
+				if err != nil {
+					return err
+				}
+				err = dConnector.StoreInBatches(tableConfig.NewName, allSettings, 1000)
+				if err != nil {
+					return err
+				}
+				fmt.Printf("Inserted %v the data into %s\n", len(allSettings), tableConfig.NewName)
+			} else {
+				err := tableMigration(source, destination, tableConfig)
+				if err != nil {
+					return err
+				}
 			}
 		} else if tableConfig.OldName == "nil" {
 			fmt.Printf("Creating new entry for %s\n", tableConfig.NewName)

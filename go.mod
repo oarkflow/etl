@@ -2,10 +2,12 @@ module github.com/oarkflow/etl
 
 go 1.21.0
 
+replace gorm.io/gorm => github.com/sujit-baniya/gorm v0.0.3
+
 require (
 	github.com/oarkflow/errors v0.0.6
 	github.com/oarkflow/metadata v0.0.34
-	github.com/oarkflow/pkg v0.1.1
+	github.com/oarkflow/pkg v0.1.21
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/gorm v1.25.7
 )
