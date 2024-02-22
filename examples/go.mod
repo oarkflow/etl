@@ -1,14 +1,12 @@
-module github.com/oarkflow/etl
+module examples
 
 go 1.22.0
 
-replace gorm.io/gorm => github.com/sujit-baniya/gorm v0.0.3
-
 require (
-	github.com/oarkflow/errors v0.0.6
+	github.com/oarkflow/etl v0.0.20
 	github.com/oarkflow/metadata v0.0.35
 	github.com/oarkflow/pkg v0.1.26
-	gorm.io/gorm v1.25.7
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -26,10 +24,11 @@ require (
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/klauspost/compress v1.17.7 // indirect
+	github.com/klauspost/compress v1.17.6 // indirect
 	github.com/lib/pq v1.10.9 // indirect
-	github.com/microsoft/go-mssqldb v1.7.0 // indirect
+	github.com/microsoft/go-mssqldb v1.6.0 // indirect
 	github.com/oarkflow/db v0.0.1 // indirect
+	github.com/oarkflow/errors v0.0.6 // indirect
 	github.com/oarkflow/frame v0.0.63 // indirect
 	github.com/oarkflow/json v0.0.5 // indirect
 	github.com/oarkflow/log v1.0.74 // indirect
@@ -38,7 +37,7 @@ require (
 	github.com/toorop/go-dkim v0.0.0-20240103092955-90b7d1423f92 // indirect
 	github.com/xhit/go-simple-mail/v2 v2.16.0 // indirect
 	golang.org/x/crypto v0.19.0 // indirect
-	golang.org/x/exp v0.0.0-20240213143201-ec583247a57a // indirect
+	golang.org/x/exp v0.0.0-20240205201215-2c58cdc269a3 // indirect
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
@@ -46,4 +45,5 @@ require (
 	gorm.io/driver/mysql v1.5.4 // indirect
 	gorm.io/driver/postgres v1.5.6 // indirect
 	gorm.io/driver/sqlserver v1.5.3 // indirect
+	gorm.io/gorm v1.25.7 // indirect
 )

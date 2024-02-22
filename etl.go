@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-
+	
 	"github.com/oarkflow/pkg/str"
-
+	
 	"github.com/oarkflow/errors"
 	"github.com/oarkflow/metadata"
 	"github.com/oarkflow/pkg/rule"
@@ -21,39 +21,39 @@ type Transformer interface {
 }
 
 type Source struct {
-	Name        string
-	Query       string
-	Type        string
-	Identifiers []string
+	Name        string   `json:"name"`
+	Query       string   `json:"query"`
+	Type        string   `json:"type"`
+	Identifiers []string `json:"identifiers"`
 }
 
 type Destination struct {
-	Name          string
-	Type          string
-	KeyField      string
-	ValueField    string
-	DataTypeField string
-	ExcludeFields []string
-	IncludeFields []string
-	ExtraValues   map[string]any
-	KeyValueTable bool
-	StoreDataType bool
+	Name          string         `json:"name"`
+	Type          string         `json:"type"`
+	KeyField      string         `json:"key_field"`
+	ValueField    string         `json:"value_field"`
+	DataTypeField string         `json:"data_type_field"`
+	ExcludeFields []string       `json:"exclude_fields"`
+	IncludeFields []string       `json:"include_fields"`
+	ExtraValues   map[string]any `json:"extra_values"`
+	KeyValueTable bool           `json:"key_value_table"`
+	StoreDataType bool           `json:"store_data_type"`
 }
 
 type Config struct {
-	RowLimit    int64
-	BatchSize   int
-	SkipTables  []string
-	CloneTables []string
-	CloneSource bool
-	Persist     bool
+	RowLimit    int64    `json:"row_limit"`
+	BatchSize   int      `json:"batch_size"`
+	SkipTables  []string `json:"skip_tables"`
+	CloneTables []string `json:"clone_tables"`
+	CloneSource bool     `json:"clone_source"`
+	Persist     bool     `json:"persist"`
 }
 
 type Page struct {
-	Last    bool
-	Offset  int64
-	Limit   int
-	Filters map[string]any
+	Last    bool           `json:"last"`
+	Offset  int64          `json:"offset"`
+	Limit   int            `json:"limit"`
+	Filters map[string]any `json:"filters"`
 }
 
 type ETL struct {
@@ -129,7 +129,7 @@ func (e *ETL) process(batch int64, data []map[string]any) ([]map[string]any, err
 			}
 		}
 	}
-
+	
 	for _, row := range data {
 		for field, val := range row {
 			lowerField := strings.ToLower(field)
@@ -162,7 +162,7 @@ func (e *ETL) process(batch int64, data []map[string]any) ([]map[string]any, err
 	if !e.dest.KeyValueTable && e.destCon != nil {
 		return e.storeData(batch, data)
 	}
-
+	
 	if len(payload) > 0 && e.destCon != nil {
 		return e.storeData(batch, payload)
 	}
@@ -240,7 +240,7 @@ func (e *ETL) processKeyValueTable(row map[string]any) ([]map[string]any, error)
 				rows = append(rows, data)
 			}
 		}
-
+		
 	}
 	return rows, nil
 }
@@ -387,7 +387,7 @@ func MigrateDB(srcCon metadata.DataSource, destCon metadata.DataSource, config C
 			}
 		}
 	}
-
+	
 	for _, src := range tables {
 		etl := New(Config{
 			RowLimit:  config.RowLimit,
@@ -426,7 +426,7 @@ func fixFieldType(row map[string]any, field metadata.Field) {
 			}
 		default:
 			row[field.Name] = v
-
+			
 		}
 	}
 }
