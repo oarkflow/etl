@@ -46,7 +46,7 @@ func (m *Mapper) Transform(data etl.Data) error {
 				data[dest] = val
 			}
 		}
-		if !m.cfg.KeepUnmatchedFields {
+		if !m.cfg.KeepUnmatchedFields && len(m.cfg.FieldMaps) > 0 {
 			for k := range data {
 				if _, ok := m.cfg.FieldMaps[k]; !ok {
 					delete(data, k)

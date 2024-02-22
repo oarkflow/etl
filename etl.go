@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	
+
 	"github.com/oarkflow/pkg/str"
-	
+
 	"github.com/oarkflow/errors"
 	"github.com/oarkflow/metadata"
 	"github.com/oarkflow/pkg/rule"
@@ -120,18 +120,29 @@ func (e *ETL) process(batch int64, data []map[string]any) ([]map[string]any, err
 		}
 		data = d.([]map[string]any)
 	}
+	var primaryKeyField string
+	var maxID int64
+	srcFields, _ := e.srcCon.GetFields(e.src.Name)
+	for _, f := range srcFields {
+		if f.Key == "PRI" {
+			primaryKeyField = f.Name
+		}
+	}
 	var destFields []metadata.Field
 	if e.destCon != nil {
 		destFields, err = e.destCon.GetFields(e.dest.Name)
 		if err != nil {
-			if err != nil {
-				return nil, errors.NewE(err, fmt.Sprintf("Unable to get field list for %s", e.dest.Name), "ETLTransform")
-			}
+			return nil, errors.NewE(err, fmt.Sprintf("Unable to get field list for %s", e.dest.Name), "ETLTransform")
 		}
 	}
-	
 	for _, row := range data {
 		for field, val := range row {
+			if field == primaryKeyField {
+				result, _ := strconv.ParseInt(fmt.Sprintf("%v", val), 10, 64)
+				if result > maxID {
+					maxID = result
+				}
+			}
 			lowerField := strings.ToLower(field)
 			row[lowerField] = val
 			if lowerField != field {
@@ -159,10 +170,10 @@ func (e *ETL) process(batch int64, data []map[string]any) ([]map[string]any, err
 			payload = append(payload, row)
 		}
 	}
-	if !e.dest.KeyValueTable && e.destCon != nil {
+	if !e.dest.KeyValueTable && e.destCon != nil && len(data) > 0 {
 		return e.storeData(batch, data)
 	}
-	
+
 	if len(payload) > 0 && e.destCon != nil {
 		return e.storeData(batch, payload)
 	}
@@ -240,7 +251,7 @@ func (e *ETL) processKeyValueTable(row map[string]any) ([]map[string]any, error)
 				rows = append(rows, data)
 			}
 		}
-		
+
 	}
 	return rows, nil
 }
@@ -387,7 +398,7 @@ func MigrateDB(srcCon metadata.DataSource, destCon metadata.DataSource, config C
 			}
 		}
 	}
-	
+
 	for _, src := range tables {
 		etl := New(Config{
 			RowLimit:  config.RowLimit,
@@ -426,7 +437,7 @@ func fixFieldType(row map[string]any, field metadata.Field) {
 			}
 		default:
 			row[field.Name] = v
-			
+
 		}
 	}
 }

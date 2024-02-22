@@ -19,6 +19,8 @@ type TableConfig struct {
 	NewName             string              `json:"new_name" yaml:"new_name"`
 	Query               string              `yaml:"query" json:"query"`
 	Migrate             bool                `json:"migrate" yaml:"migrate"`
+	CloneSource         bool                `json:"clone_source" yaml:"clone_source"`
+	BatchSize           int                 `json:"batch_size" yaml:"batch_size"`
 	KeepUnmatchedFields bool                `json:"keep_unmatched_fields" yaml:"keep_unmatched_fields"`
 	ExcludeFields       []string            `json:"exclude_fields" yaml:"exclude_fields"`
 	IncludeFields       []string            `json:"include_fields" yaml:"include_fields"`
@@ -231,7 +233,10 @@ func tableMigration(source, destination metadata.DataSource, tableConfig TableCo
 	if err != nil {
 		return err
 	}
-	instance := etl.New(etl.Config{CloneSource: false, BatchSize: 500})
+	if tableConfig.BatchSize == 0 {
+		tableConfig.BatchSize = 500
+	}
+	instance := etl.New(etl.Config{CloneSource: tableConfig.CloneSource, BatchSize: tableConfig.BatchSize})
 	mp := mapper.New(&mapper.Config{
 		FieldMaps:           tableConfig.Mapping,
 		KeepUnmatchedFields: tableConfig.KeepUnmatchedFields,
