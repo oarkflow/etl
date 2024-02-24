@@ -1,16 +1,18 @@
 package etl
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/oarkflow/pkg/str"
 
 	"github.com/oarkflow/errors"
 	"github.com/oarkflow/metadata"
 	"github.com/oarkflow/pkg/rule"
-	"gorm.io/gorm"
 )
 
 type Data any
@@ -41,12 +43,13 @@ type Destination struct {
 }
 
 type Config struct {
-	RowLimit    int64    `json:"row_limit"`
-	BatchSize   int      `json:"batch_size"`
-	SkipTables  []string `json:"skip_tables"`
-	CloneTables []string `json:"clone_tables"`
-	CloneSource bool     `json:"clone_source"`
-	Persist     bool     `json:"persist"`
+	RowLimit          int64    `json:"row_limit"`
+	BatchSize         int      `json:"batch_size"`
+	SkipTables        []string `json:"skip_tables"`
+	CloneTables       []string `json:"clone_tables"`
+	CloneSource       bool     `json:"clone_source"`
+	SkipStoreError    bool     `json:"skip_store_error"`
+	UseLastInsertedID bool     `json:"use_last_inserted_id"`
 }
 
 type Page struct {
@@ -120,14 +123,16 @@ func (e *ETL) process(batch int64, data []map[string]any) ([]map[string]any, err
 		}
 		data = d.([]map[string]any)
 	}
-	var primaryKeyField string
+	/*var primaryKeyField string
 	var maxID int64
-	srcFields, _ := e.srcCon.GetFields(e.src.Name)
-	for _, f := range srcFields {
-		if f.Key == "PRI" {
-			primaryKeyField = f.Name
+	if e.srcCon != nil {
+		srcFields, _ := e.srcCon.GetFields(e.src.Name)
+		for _, f := range srcFields {
+			if f.Key == "PRI" {
+				primaryKeyField = f.Name
+			}
 		}
-	}
+	}*/
 	var destFields []metadata.Field
 	if e.destCon != nil {
 		destFields, err = e.destCon.GetFields(e.dest.Name)
@@ -137,12 +142,12 @@ func (e *ETL) process(batch int64, data []map[string]any) ([]map[string]any, err
 	}
 	for _, row := range data {
 		for field, val := range row {
-			if field == primaryKeyField {
+			/*if field == primaryKeyField {
 				result, _ := strconv.ParseInt(fmt.Sprintf("%v", val), 10, 64)
 				if result > maxID {
 					maxID = result
 				}
-			}
+			}*/
 			lowerField := strings.ToLower(field)
 			row[lowerField] = val
 			if lowerField != field {
@@ -171,11 +176,33 @@ func (e *ETL) process(batch int64, data []map[string]any) ([]map[string]any, err
 		}
 	}
 	if !e.dest.KeyValueTable && e.destCon != nil && len(data) > 0 {
-		return e.storeData(batch, data)
+		rs, err := e.storeData(batch, data)
+		if err != nil {
+			return rs, err
+		}
+		/*migrationInfo := &MigrationInfo{
+			Table:          e.src.Name,
+			PrimaryKey:     primaryKeyField,
+			LastInsertedID: maxID,
+			LastInsertedAt: time.Now(),
+		}
+		migrationInfo.Update()*/
+		return rs, err
 	}
 
 	if len(payload) > 0 && e.destCon != nil {
-		return e.storeData(batch, payload)
+		rs, err := e.storeData(batch, payload)
+		if err != nil {
+			return rs, err
+		}
+		/*migrationInfo := &MigrationInfo{
+			Table:          e.src.Name,
+			PrimaryKey:     primaryKeyField,
+			LastInsertedID: maxID,
+			LastInsertedAt: time.Now(),
+		}
+		migrationInfo.Update()*/
+		return rs, err
 	}
 	return payload, nil
 }
@@ -186,11 +213,17 @@ func (e *ETL) storeData(batch int64, data []map[string]any) ([]map[string]any, e
 	if len(data) > 0 {
 		err = e.destCon.Store(e.dest.Name, data)
 		if err != nil {
-			if !errors.Is(err, gorm.ErrDuplicatedKey) {
-				failedData = append(failedData, data...)
-			} else {
-				return failedData, err
+			if !e.cfg.SkipStoreError {
+				errMsg := err.Error()
+				if strings.Contains("duplicated key not allowed", errMsg) {
+					return failedData, err
+				}
+				if strings.Contains(errMsg, "duplicate key value violates unique") {
+					return failedData, err
+				}
 			}
+
+			failedData = append(failedData, data...)
 		}
 	}
 	if len(failedData) > 0 {
@@ -251,7 +284,6 @@ func (e *ETL) processKeyValueTable(row map[string]any) ([]map[string]any, error)
 				rows = append(rows, data)
 			}
 		}
-
 	}
 	return rows, nil
 }
@@ -266,14 +298,24 @@ func (e *ETL) processFailedData(payload map[int64][]map[string]any) ([]map[strin
 			err := e.destCon.Store(e.dest.Name, data)
 			if err != nil {
 				failedDataLen++
-				if !errors.Is(err, gorm.ErrDuplicatedKey) {
-					failedData = append(failedData, data)
-				} else {
-					return nil, err
+				if !e.cfg.SkipStoreError {
+					errMsg := err.Error()
+					if strings.Contains("duplicated key not allowed", errMsg) {
+						return failedData, err
+					}
+					if strings.Contains(errMsg, "duplicate key value violates unique") {
+						return failedData, err
+					}
 				}
+				failedData = append(failedData, data)
 			}
 		}
-		fmt.Println("Processed...", payloadLen-failedDataLen, " failed records in", e.src.Name, " out of ", payloadLen, "in batch ", batch)
+		processedData := payloadLen - failedDataLen
+		if processedData > 0 {
+			fmt.Println("Processed Failed Data...", processedData, " failed records in", e.src.Name, " out of ", payloadLen, "in batch ", batch)
+		} else {
+			fmt.Println("No")
+		}
 	}
 	return failedData, nil
 }
@@ -294,11 +336,12 @@ func (e *ETL) Process(filter ...map[string]any) (map[int64][]map[string]any, err
 	if len(filter) > 0 {
 		page.Filters = filter[0]
 	}
-	fmt.Println("Processing migration for", e.src.Name, "to", e.dest.Name)
+	fmt.Println(fmt.Sprintf("Processing migration for %s.%s.%s to %s.%s.%s", e.srcCon.Config().Driver, e.srcCon.Config().Database, e.src.Name, e.destCon.Config().Driver, e.destCon.Config().Database, e.dest.Name))
 	for !page.Last {
 		offset := page.Offset
 		data, err := e.getData(page)
-		totalData += len(data)
+		dataLen := len(data)
+		totalData += dataLen
 		if err != nil {
 			return nil, errors.NewE(err, fmt.Sprintf("Unable to get data for %s", e.src.Name), "ETLTransform")
 		}
@@ -306,10 +349,15 @@ func (e *ETL) Process(filter ...map[string]any) (map[int64][]map[string]any, err
 		if err != nil {
 			return nil, err
 		}
+		data = nil
 		failedRows += len(failed)
 		failedData[offset] = failed
+		fmt.Println(fmt.Sprintf("Processed %d records in %s.%s.%s at %v", offset, e.srcCon.Config().Driver, e.srcCon.Config().Database, e.src.Name, time.Now()))
 	}
-	fmt.Println("Processed...", totalData-failedRows, "records of", totalData, "in", e.src.Name)
+	processedRecords := totalData - failedRows
+	if processedRecords > 0 {
+		fmt.Println(fmt.Sprintf("Processed %d records of %d in %s.%s.%s", processedRecords, totalData, e.srcCon.Config().Driver, e.srcCon.Config().Database, e.src.Name))
+	}
 	return failedData, nil
 }
 
@@ -323,14 +371,32 @@ func (e *ETL) getData(page *Page) ([]map[string]any, error) {
 	}
 	fields, _ := e.srcCon.GetFields(e.src.Name)
 	filter := make(map[string]any)
+	migrationInfoFile, err := os.ReadFile(fmt.Sprintf("%s.json", e.src.Name))
 	sql := fmt.Sprintf("SELECT * FROM %s", e.src.Name)
+	var migrationInfo MigrationInfo
+	if err == nil {
+		json.Unmarshal(migrationInfoFile, &migrationInfo)
+	}
 	if len(page.Filters) > 0 {
 		var condition []string
 		for k, v := range page.Filters {
 			filter[k] = v
 			condition = append(condition, fmt.Sprintf("%s=@%s", k, k))
 		}
-		sql += " WHERE " + strings.Join(condition, ", ")
+		sql += " WHERE " + strings.Join(condition, "AND ")
+		if migrationInfo.LastInsertedID != nil && e.cfg.UseLastInsertedID {
+			id, _ := strconv.ParseInt(fmt.Sprintf("%v", migrationInfo.LastInsertedID), 10, 64)
+			if id != 0 {
+				sql += " AND " + fmt.Sprintf("%s > %d", migrationInfo.PrimaryKey, id)
+			}
+		}
+	} else {
+		if migrationInfo.LastInsertedID != nil && e.cfg.UseLastInsertedID {
+			id, _ := strconv.ParseInt(fmt.Sprintf("%v", migrationInfo.LastInsertedID), 10, 64)
+			if id != 0 {
+				sql += " WHERE " + fmt.Sprintf("%s > %d", migrationInfo.PrimaryKey, id)
+			}
+		}
 	}
 	var field *metadata.Field
 	for _, f := range fields {
@@ -401,9 +467,13 @@ func MigrateDB(srcCon metadata.DataSource, destCon metadata.DataSource, config C
 
 	for _, src := range tables {
 		etl := New(Config{
-			RowLimit:  config.RowLimit,
-			Persist:   config.Persist,
-			BatchSize: config.BatchSize,
+			RowLimit:          config.RowLimit,
+			BatchSize:         config.BatchSize,
+			SkipTables:        config.SkipTables,
+			CloneTables:       config.CloneTables,
+			CloneSource:       config.CloneSource,
+			SkipStoreError:    config.SkipStoreError,
+			UseLastInsertedID: config.UseLastInsertedID,
 		})
 		_, err := etl.
 			AddSource(srcCon, Source{Name: src}).

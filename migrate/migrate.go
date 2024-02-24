@@ -15,22 +15,26 @@ import (
 
 // TableConfig contains the configuration for a single table migration.
 type TableConfig struct {
-	OldName             string              `json:"old_name" yaml:"old_name"`
-	NewName             string              `json:"new_name" yaml:"new_name"`
-	Query               string              `yaml:"query" json:"query"`
-	Migrate             bool                `json:"migrate" yaml:"migrate"`
-	CloneSource         bool                `json:"clone_source" yaml:"clone_source"`
-	BatchSize           int                 `json:"batch_size" yaml:"batch_size"`
-	KeepUnmatchedFields bool                `json:"keep_unmatched_fields" yaml:"keep_unmatched_fields"`
-	ExcludeFields       []string            `json:"exclude_fields" yaml:"exclude_fields"`
-	IncludeFields       []string            `json:"include_fields" yaml:"include_fields"`
-	ExtraValues         map[string]any      `json:"extra_values" yaml:"extra_values"`
-	KeyValueTable       bool                `json:"key_value_table" yaml:"key_value_table"`
-	StoreDataType       bool                `json:"store_data_type" yaml:"store_data_type"`
-	UpdateSequence      bool                `yaml:"update_sequence" json:"update_sequence"`
-	Mapping             map[string]string   `json:"mapping" yaml:"mapping"`
-	MultipleMapping     []map[string]string `json:"multiple_mapping" yaml:"multiple_mapping"`
-	Lookups             string              `json:"lookups" yaml:"lookups"`
+	OldName              string              `json:"old_name" yaml:"old_name"`
+	NewName              string              `json:"new_name" yaml:"new_name"`
+	QueryName            string              `yaml:"query_name" json:"query_name"`
+	Query                string              `yaml:"query" json:"query"`
+	QueryIdentifierField string              `yaml:"query_identifier_field" json:"query_identifier_field"`
+	Migrate              bool                `json:"migrate" yaml:"migrate"`
+	CloneSource          bool                `json:"clone_source" yaml:"clone_source"`
+	BatchSize            int                 `json:"batch_size" yaml:"batch_size"`
+	SkipStoreError       bool                `json:"skip_store_error" yaml:"skip_store_error"`
+	KeepUnmatchedFields  bool                `json:"keep_unmatched_fields" yaml:"keep_unmatched_fields"`
+	ExcludeFields        []string            `json:"exclude_fields" yaml:"exclude_fields"`
+	IncludeFields        []string            `json:"include_fields" yaml:"include_fields"`
+	ExtraValues          map[string]any      `json:"extra_values" yaml:"extra_values"`
+	KeyValueTable        bool                `json:"key_value_table" yaml:"key_value_table"`
+	StoreDataType        bool                `json:"store_data_type" yaml:"store_data_type"`
+	UpdateSequence       bool                `yaml:"update_sequence" json:"update_sequence"`
+	Mapping              map[string]string   `json:"mapping" yaml:"mapping"`
+	MultipleMapping      []map[string]string `json:"multiple_mapping" yaml:"multiple_mapping"`
+	Lookups              string              `json:"lookups" yaml:"lookups"`
+	UseLastInsertedID    bool                `yaml:"use_last_inserted_id" json:"use_last_inserted_id"`
 }
 
 func FromYaml(srcConfig, dstConfig metadata.Config, tableBytes []byte) error {
@@ -236,7 +240,12 @@ func tableMigration(source, destination metadata.DataSource, tableConfig TableCo
 	if tableConfig.BatchSize == 0 {
 		tableConfig.BatchSize = 500
 	}
-	instance := etl.New(etl.Config{CloneSource: tableConfig.CloneSource, BatchSize: tableConfig.BatchSize})
+	instance := etl.New(etl.Config{
+		CloneSource:       tableConfig.CloneSource,
+		BatchSize:         tableConfig.BatchSize,
+		SkipStoreError:    tableConfig.SkipStoreError,
+		UseLastInsertedID: tableConfig.UseLastInsertedID,
+	})
 	mp := mapper.New(&mapper.Config{
 		FieldMaps:           tableConfig.Mapping,
 		KeepUnmatchedFields: tableConfig.KeepUnmatchedFields,

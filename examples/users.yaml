@@ -1,0 +1,23 @@
+source:
+    host: "127.0.0.1"
+    port: 3306
+    driver: "mysql"
+    username: "root"
+    password: "T#sT1234"
+    database: "tests"
+    disablelogger: true
+destination:
+    host: "localhost"
+    port: 5432
+    driver: "postgresql"
+    username: "postgres"
+    password: "postgres"
+    database: "tests"
+    disablelogger: true
+tables:
+    -   old_name: "users"
+        new_name: "users"
+        migrate: true
+        clone_source: true
+        batch_size: 1000
+        skip_store_error: true

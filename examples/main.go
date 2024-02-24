@@ -146,7 +146,6 @@ func migrateDB() {
 	source, destination := conn()
 	err := etl.MigrateDB(source, destination, etl.Config{
 		CloneSource: true,
-		Persist:     false,
 		CloneTables: []string{"cdi_reason"},
 	})
 	if err != nil {

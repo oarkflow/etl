@@ -1,9 +1,15 @@
-module github.com/oarkflow/etl
+module examples
 
 go 1.22.0
 
+replace (
+	github.com/oarkflow/etl => ../
+	gorm.io/gorm => github.com/sujit-baniya/gorm v0.0.5
+)
+
 require (
-	github.com/oarkflow/errors v0.0.6
+	github.com/brianvoe/gofakeit/v7 v7.0.1
+	github.com/oarkflow/etl v0.0.21
 	github.com/oarkflow/metadata v0.0.44
 	github.com/oarkflow/pkg v0.1.26
 	gopkg.in/yaml.v3 v3.0.1
@@ -25,15 +31,14 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/klauspost/compress v1.17.7 // indirect
-	github.com/kr/text v0.2.0 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/microsoft/go-mssqldb v1.7.0 // indirect
 	github.com/oarkflow/db v0.0.1 // indirect
+	github.com/oarkflow/errors v0.0.6 // indirect
 	github.com/oarkflow/frame v0.0.63 // indirect
 	github.com/oarkflow/json v0.0.5 // indirect
 	github.com/oarkflow/log v1.0.74 // indirect
 	github.com/oarkflow/protocol v0.0.15 // indirect
-	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/toorop/go-dkim v0.0.0-20240103092955-90b7d1423f92 // indirect
 	github.com/xhit/go-simple-mail/v2 v2.16.0 // indirect
