@@ -14,9 +14,10 @@ import (
 func main() {
 	// migrateDB()
 	// tableMigration()
+	multipleTablesMigration()
 	// entityMigration()
 	// settingsTableMigration()
-	etlWithFilter()
+	// etlWithFilter()
 	// testRawSqlWithMapFilter()
 }
 
@@ -95,21 +96,132 @@ func settingsTableMigration() {
 }
 
 func tableMigration() {
-	mapper := mapper.New(&mapper.Config{
+	mp := mapper.New(&mapper.Config{
 		FieldMaps: map[string]string{
-			"cdi_reason_id": "cdi_id",
-			"area":          "cdi_area",
-			"status":        "{{'ACTIVE'}}",
-			"created_at":    "{{now()}}",
+			"user_id":     "user_uid",
+			"title":       "user_title",
+			"first_name":  "user_first_name",
+			"middle_name": "middle_name",
+			"last_name":   "user_last_name",
+			"email":       "user_email_address",
+			"created_by":  "added_by",
+			"created_at":  "{{added_utc ? added_utc : now()}}",
+			"updated_at":  "{{added_utc ? added_utc : now()}}",
+			"status":      "{{user_active == 1 ? 'ACTIVE': 'INACTIVE'}}",
+			"is_active":   "{{user_active == 1 ? true: false}}",
+		},
+		KeepUnmatchedFields: false,
+	})
+	mp1 := mapper.New(&mapper.Config{
+		FieldMaps: map[string]string{
+			"user_id":         "user_uid",
+			"credential":      "user_password",
+			"credential_type": "{{'PASSWORD'}}",
+			"provider_type":   "{{'LOCAL'}}",
+			"created_by":      "added_by",
+			"created_at":      "{{added_utc ? added_utc : now()}}",
+			"updated_at":      "{{added_utc ? added_utc : now()}}",
+			"is_active":       "{{user_active == 1 ? true: false}}",
 		},
 		KeepUnmatchedFields: false,
 	})
 	source, destination := conn()
-	instance := etl.New(etl.Config{CloneSource: false})
-	instance.AddSource(source, etl.Source{Name: "cdi_reason"})
-	instance.AddTransformer(mapper)
-	instance.AddDestination(destination, etl.Destination{Name: "tmp_cdi_reason"})
+	instance := etl.New(etl.Config{CloneSource: false, TruncateDestination: true, BatchSize: 1})
+	instance.AddSource(source, etl.Source{Name: "tbl_user"})
+	instance.AddTransformer(mp)
+	instance.AddDestination(destination, etl.Destination{
+		Name: "users",
+		MultipleDestinations: []etl.Destination{
+			{
+				Name:          "user_settings",
+				KeyValueTable: true,
+				StoreDataType: true,
+				IncludeFields: []string{"user_uid"},
+				ExtraValues: map[string]any{
+					"user_id":    "user_uid",
+					"company_id": 1,
+				},
+				ExcludeFields: []string{"added_utc", "added_by", "user_uid", "user_title", "user_first_name", "middle_name", "user_last_name", "user_email_address", "user_password", "user_active"},
+			},
+			{
+				Name:         "credentials",
+				Transformers: []etl.Transformer{mp1},
+			},
+		},
+	})
 	_, err := instance.Process()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func multipleTablesMigration() {
+	source, destination := conn()
+	userMapper := mapper.New(&mapper.Config{
+		FieldMaps: map[string]string{
+			"user_id":     "user_uid",
+			"title":       "user_title",
+			"first_name":  "user_first_name",
+			"middle_name": "middle_name",
+			"last_name":   "user_last_name",
+			"email":       "user_email_address",
+			"created_by":  "added_by",
+			"created_at":  "{{added_utc ? added_utc : now()}}",
+			"updated_at":  "{{added_utc ? added_utc : now()}}",
+			"status":      "{{user_active == 1 ? 'ACTIVE': 'INACTIVE'}}",
+			"is_active":   "{{user_active == 1 ? true: false}}",
+		},
+		KeepUnmatchedFields: false,
+	})
+	credentialMapper := mapper.New(&mapper.Config{
+		FieldMaps: map[string]string{
+			"user_id":         "user_uid",
+			"credential":      "user_password",
+			"credential_type": "{{'PASSWORD'}}",
+			"provider_type":   "{{'LOCAL'}}",
+			"created_by":      "added_by",
+			"created_at":      "{{added_utc ? added_utc : now()}}",
+			"updated_at":      "{{added_utc ? added_utc : now()}}",
+			"is_active":       "{{user_active == 1 ? true: false}}",
+		},
+		KeepUnmatchedFields: false,
+	})
+
+	userETL := etl.New(etl.Config{CloneSource: false, TruncateDestination: true})
+	userETL.AddSource(source, etl.Source{Name: "tbl_user"})
+	userETL.AddTransformer(userMapper)
+	userETL.AddDestination(destination, etl.Destination{
+		Name: "users",
+	})
+	_, err := userETL.Process()
+	if err != nil {
+		panic(err)
+	}
+
+	settingsETL := etl.New(etl.Config{CloneSource: false, TruncateDestination: true})
+	settingsETL.AddSource(source, etl.Source{Name: "tbl_user"})
+	settingsETL.AddDestination(destination, etl.Destination{
+		Name:          "user_settings",
+		KeyValueTable: true,
+		ExtraValues: map[string]any{
+			"user_id":    "user_uid",
+			"company_id": 1,
+		},
+		IncludeFields: []string{"user_uid"},
+		ExcludeFields: []string{"added_utc", "added_by", "user_uid", "user_title", "user_first_name", "middle_name", "user_last_name", "user_email_address", "user_password", "user_active"},
+	})
+	_, err = settingsETL.Process()
+	if err != nil {
+		panic(err)
+	}
+
+	credentialETL := etl.New(etl.Config{CloneSource: false, TruncateDestination: true})
+	credentialETL.AddSource(source, etl.Source{Name: "tbl_user"})
+	credentialETL.AddTransformer(credentialMapper)
+	credentialETL.AddDestination(destination, etl.Destination{
+		Name: "credentials",
+	})
+	_, err = credentialETL.Process()
 	if err != nil {
 		panic(err)
 	}
@@ -154,7 +266,7 @@ func migrateDB() {
 }
 
 func conn() (metadata.DataSource, metadata.DataSource) {
-	cfg1 := metadata.Config{
+	src := metadata.Config{
 		Host:          "localhost",
 		Port:          3306,
 		Driver:        "mysql",
@@ -163,16 +275,16 @@ func conn() (metadata.DataSource, metadata.DataSource) {
 		Database:      "cleardb",
 		DisableLogger: true,
 	}
-	cfg := metadata.Config{
+	dest := metadata.Config{
 		Host:          "localhost",
 		Port:          5432,
 		Driver:        "postgresql",
 		Username:      "postgres",
 		Password:      "postgres",
-		Database:      "clear",
+		Database:      "clear20",
 		DisableLogger: true,
 	}
-	source := metadata.New(cfg1)
-	destination := metadata.New(cfg)
+	source := metadata.New(src)
+	destination := metadata.New(dest)
 	return source, destination
 }

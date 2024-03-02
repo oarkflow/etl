@@ -3,8 +3,8 @@ source:
     port: 3306
     driver: "mysql"
     username: "root"
-    password: "T#sT1234"
-    database: "tests"
+    password: "root"
+    database: "cleardb"
     disablelogger: true
 destination:
     host: "localhost"
@@ -12,12 +12,66 @@ destination:
     driver: "postgresql"
     username: "postgres"
     password: "postgres"
-    database: "tests"
+    database: "clear20"
     disablelogger: true
 tables:
-    -   old_name: "users"
+    -   old_name: "tbl_user"
         new_name: "users"
         migrate: true
-        clone_source: true
+        clone_source: false
         batch_size: 1000
         skip_store_error: true
+        truncate_destination: true
+        mapping:
+            user_id: "user_uid"
+            title: "user_title"
+            first_name: "user_first_name"
+            middle_name: "middle_name"
+            last_name: "user_last_name"
+            email: "user_email_address"
+            created_by: "added_by"
+            created_at: "{{added_utc ? added_utc : now()}}"
+            updated_at: "{{added_utc ? added_utc : now()}}"
+            status: "{{user_active == 1 ? 'ACTIVE': 'INACTIVE'}}"
+            is_active: "{{user_active == 1 ? true: false}}"
+    -   old_name: "tbl_user"
+        new_name: "credentials"
+        migrate: true
+        clone_source: false
+        batch_size: 1000
+        skip_store_error: true
+        truncate_destination: true
+        mapping:
+            user_id: "user_uid"
+            credential: "user_password"
+            credential_type: "{{'PASSWORD'}}"
+            provider_type: "{{'LOCAL'}}"
+            created_by: "added_by"
+            created_at: "{{added_utc ? added_utc : now()}}"
+            updated_at: "{{added_utc ? added_utc : now()}}"
+            is_active: "{{user_active == 1 ? true: false}}"
+    -   old_name: "tbl_user"
+        new_name: "user_settings"
+        migrate: true
+        clone_source: false
+        batch_size: 1000
+        skip_store_error: true
+        key_value_table: true
+        truncate_destination: true
+        extra_values:
+            user_id: "user_uid"
+            company_id: 1
+        include_fields:
+            - "user_uid"
+        exclude_fields:
+            - "added_utc"
+            - "added_by"
+            - "user_uid"
+            - "user_title"
+            - "user_first_name"
+            - "middle_name"
+            - "user_last_name"
+            - "user_email_address"
+            - "user_password"
+            - "user_active"
+            - "user_organization"

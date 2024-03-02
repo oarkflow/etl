@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/oarkflow/pkg/evaluate"
 	"github.com/oarkflow/pkg/str"
 
 	"github.com/oarkflow/errors"
@@ -30,26 +31,29 @@ type Source struct {
 }
 
 type Destination struct {
-	Name          string         `json:"name"`
-	Type          string         `json:"type"`
-	KeyField      string         `json:"key_field"`
-	ValueField    string         `json:"value_field"`
-	DataTypeField string         `json:"data_type_field"`
-	ExcludeFields []string       `json:"exclude_fields"`
-	IncludeFields []string       `json:"include_fields"`
-	ExtraValues   map[string]any `json:"extra_values"`
-	KeyValueTable bool           `json:"key_value_table"`
-	StoreDataType bool           `json:"store_data_type"`
+	Name                 string         `json:"name"`
+	Type                 string         `json:"type"`
+	KeyField             string         `json:"key_field"`
+	ValueField           string         `json:"value_field"`
+	DataTypeField        string         `json:"data_type_field"`
+	ExcludeFields        []string       `json:"exclude_fields"`
+	IncludeFields        []string       `json:"include_fields"`
+	Transformers         []Transformer  `json:"transformers"`
+	ExtraValues          map[string]any `json:"extra_values"`
+	MultipleDestinations []Destination  `json:"multiple_destinations"`
+	KeyValueTable        bool           `json:"key_value_table"`
+	StoreDataType        bool           `json:"store_data_type"`
 }
 
 type Config struct {
-	RowLimit          int64    `json:"row_limit"`
-	BatchSize         int      `json:"batch_size"`
-	SkipTables        []string `json:"skip_tables"`
-	CloneTables       []string `json:"clone_tables"`
-	CloneSource       bool     `json:"clone_source"`
-	SkipStoreError    bool     `json:"skip_store_error"`
-	UseLastInsertedID bool     `json:"use_last_inserted_id"`
+	RowLimit            int64    `json:"row_limit"`
+	BatchSize           int      `json:"batch_size"`
+	SkipTables          []string `json:"skip_tables"`
+	CloneTables         []string `json:"clone_tables"`
+	CloneSource         bool     `json:"clone_source"`
+	TruncateDestination bool     `json:"truncate_destination"`
+	SkipStoreError      bool     `json:"skip_store_error"`
+	UseLastInsertedID   bool     `json:"use_last_inserted_id"`
 }
 
 type Page struct {
@@ -257,7 +261,19 @@ func (e *ETL) processKeyValueTable(row map[string]any) ([]map[string]any, error)
 			}
 		}
 		for k, v := range e.dest.ExtraValues {
-			data[k] = v
+			src := fmt.Sprintf("%v", v)
+			if strings.HasPrefix(src, "{{") {
+				p, _ := evaluate.Parse(src, true)
+				pr := evaluate.NewEvalParams(data)
+				d, err := p.Eval(pr)
+				if err == nil {
+					data[k] = d
+				}
+			} else if val, ok := data[src]; ok {
+				data[k] = val
+			} else {
+				data[k] = v
+			}
 		}
 		data[e.dest.KeyField] = key
 		strVal := fmt.Sprintf("%v", val)
@@ -279,10 +295,20 @@ func (e *ETL) processKeyValueTable(row map[string]any) ([]map[string]any, error)
 				}
 			}
 		}
-		if len(e.dest.ExcludeFields) > 0 && !str.Contains(e.dest.ExcludeFields, key) {
-			if _, ok := data[e.dest.DataTypeField]; ok {
+		if len(e.dest.ExcludeFields) > 0 {
+			for ka, _ := range data {
+				if str.Contains(e.dest.ExcludeFields, ka) {
+					delete(data, ka)
+				}
+			}
+		}
+
+		if len(e.dest.ExcludeFields) > 0 {
+			if !str.Contains(e.dest.ExcludeFields, fmt.Sprintf("%v", data[e.dest.KeyField])) {
 				rows = append(rows, data)
 			}
+		} else {
+			rows = append(rows, data)
 		}
 	}
 	return rows, nil
@@ -297,6 +323,7 @@ func (e *ETL) processFailedData(payload map[int64][]map[string]any) ([]map[strin
 			payloadLen++
 			err := e.destCon.Store(e.dest.Name, data)
 			if err != nil {
+				panic(err)
 				failedDataLen++
 				if !e.cfg.SkipStoreError {
 					errMsg := err.Error()
@@ -314,7 +341,7 @@ func (e *ETL) processFailedData(payload map[int64][]map[string]any) ([]map[strin
 		if processedData > 0 {
 			fmt.Println("Processed Failed Data...", processedData, " failed records in", e.src.Name, " out of ", payloadLen, "in batch ", batch)
 		} else {
-			fmt.Println("No")
+			fmt.Println("Didn't process data")
 		}
 	}
 	return failedData, nil
@@ -335,6 +362,16 @@ func (e *ETL) Process(filter ...map[string]any) (map[int64][]map[string]any, err
 	page := &Page{Limit: e.cfg.BatchSize}
 	if len(filter) > 0 {
 		page.Filters = filter[0]
+	}
+	err := connect(e.srcCon, e.destCon)
+	if err != nil {
+		return nil, err
+	}
+	if e.cfg.TruncateDestination && e.destCon != nil {
+		err := e.destCon.Exec("TRUNCATE TABLE " + e.dest.Name)
+		if err != nil {
+			return nil, err
+		}
 	}
 	fmt.Println(fmt.Sprintf("Processing migration for %s.%s.%s to %s.%s.%s", e.srcCon.Config().Driver, e.srcCon.Config().Database, e.src.Name, e.destCon.Config().Driver, e.destCon.Config().Database, e.dest.Name))
 	for !page.Last {
@@ -358,14 +395,14 @@ func (e *ETL) Process(filter ...map[string]any) (map[int64][]map[string]any, err
 	if processedRecords > 0 {
 		fmt.Println(fmt.Sprintf("Processed %d records of %d in %s.%s.%s", processedRecords, totalData, e.srcCon.Config().Driver, e.srcCon.Config().Database, e.src.Name))
 	}
+
+	if len(e.dest.MultipleDestinations) > 0 {
+		e.processMultipleDestinations()
+	}
 	return failedData, nil
 }
 
 func (e *ETL) getData(page *Page) ([]map[string]any, error) {
-	err := connect(e.srcCon, e.destCon)
-	if err != nil {
-		return nil, err
-	}
 	if e.src.Name == "" {
 		return nil, errors.New("source not defined")
 	}
@@ -430,6 +467,22 @@ func (e *ETL) transform(row map[string]any) error {
 		err := transformer.Transform(row)
 		if err != nil {
 			return errors.NewE(err, fmt.Sprintf("Unable to transform using %s", transformer.Name()), "ETLTransform")
+		}
+	}
+	return nil
+}
+
+func (e *ETL) processMultipleDestinations() error {
+	for _, dest := range e.dest.MultipleDestinations {
+		etl := New(e.cfg)
+		etl.AddSource(e.srcCon, e.src)
+		if len(dest.Transformers) > 0 {
+			etl.AddTransformer(dest.Transformers...)
+		}
+		etl.AddDestination(e.destCon, dest)
+		_, err := etl.Process()
+		if err != nil {
+			return err
 		}
 	}
 	return nil

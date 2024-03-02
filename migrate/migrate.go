@@ -24,6 +24,7 @@ type TableConfig struct {
 	CloneSource          bool                `json:"clone_source" yaml:"clone_source"`
 	BatchSize            int                 `json:"batch_size" yaml:"batch_size"`
 	SkipStoreError       bool                `json:"skip_store_error" yaml:"skip_store_error"`
+	TruncateDestination  bool                `json:"truncate_destination" yaml:"truncate_destination"`
 	KeepUnmatchedFields  bool                `json:"keep_unmatched_fields" yaml:"keep_unmatched_fields"`
 	ExcludeFields        []string            `json:"exclude_fields" yaml:"exclude_fields"`
 	IncludeFields        []string            `json:"include_fields" yaml:"include_fields"`
@@ -242,10 +243,11 @@ func tableMigration(source, destination metadata.DataSource, tableConfig TableCo
 		tableConfig.BatchSize = 500
 	}
 	instance := etl.New(etl.Config{
-		CloneSource:       tableConfig.CloneSource,
-		BatchSize:         tableConfig.BatchSize,
-		SkipStoreError:    tableConfig.SkipStoreError,
-		UseLastInsertedID: tableConfig.UseLastInsertedID,
+		CloneSource:         tableConfig.CloneSource,
+		BatchSize:           tableConfig.BatchSize,
+		SkipStoreError:      tableConfig.SkipStoreError,
+		UseLastInsertedID:   tableConfig.UseLastInsertedID,
+		TruncateDestination: tableConfig.TruncateDestination,
 	})
 	mp := mapper.New(&mapper.Config{
 		FieldMaps:           tableConfig.Mapping,
