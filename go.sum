@@ -55,6 +55,8 @@ github.com/gorilla/securecookie v1.1.1/go.mod h1:ra0sb63/xPlUeL+yeDciTfxMRAA+MP+
 github.com/gorilla/sessions v1.2.1/go.mod h1:dk2InVEVJ0sfLlnXv9EAgkf6ecYs/i80K/zI+bUmuGM=
 github.com/gosimple/slug v1.13.1 h1:bQ+kpX9Qa6tHRaK+fZR0A0M2Kd7Pa5eHPPsb1JpHD+Q=
 github.com/gosimple/slug v1.13.1/go.mod h1:UiRaFH+GEilHstLUmcBgWcI42viBN7mAb818JrYOeFQ=
+github.com/gosimple/slug v1.14.0 h1:RtTL/71mJNDfpUbCOmnf/XFkzKRtD6wL6Uy+3akm4Es=
+github.com/gosimple/slug v1.14.0/go.mod h1:UiRaFH+GEilHstLUmcBgWcI42viBN7mAb818JrYOeFQ=
 github.com/gosimple/unidecode v1.0.1 h1:hZzFTMMqSswvf0LBJZCZgThIZrpDHFXux9KeGmn6T/o=
 github.com/gosimple/unidecode v1.0.1/go.mod h1:CP0Cr1Y1kogOtx0bJblKzsVWrqYaqfNOnHzpgWw4Awc=
 github.com/hashicorp/go-uuid v1.0.2/go.mod h1:6SBZvOh/SIDV7/2o3Jml5SYk/TvGqwFJ/bN7x4byOro=
@@ -100,6 +102,8 @@ github.com/oarkflow/errors v0.0.6 h1:qTBzVblrX6bFbqYLfatsrZHMBPchOZiIE3pfVzh1+k8
 github.com/oarkflow/errors v0.0.6/go.mod h1:UETn0Q55PJ+YUbpR4QImIoBavd6QvJtyW/oeTT7ghZM=
 github.com/oarkflow/frame v0.0.63 h1:C7NJuyhmwf8dAKZYfYa9iEFz05a74NKnBOfJt7qJOHI=
 github.com/oarkflow/frame v0.0.63/go.mod h1:tbPXZUdBkGZLjvdoYTqqMQIgGWrcsWHrC3qhvEEvBr8=
+github.com/oarkflow/frame v0.0.64 h1:3gp/eCxGyYFIF29DR471c+LX/h+Y11Dm6+IS1Y0D6HA=
+github.com/oarkflow/frame v0.0.64/go.mod h1:rsjk5txTvaCEo1O/i5kQP0a7Rx+vHRLAKy1w9dwY3zM=
 github.com/oarkflow/json v0.0.5 h1:iIGQDTh/CZtlV3PAKY3I9DfUQBDQjJ8usYYPA4OnNj4=
 github.com/oarkflow/json v0.0.5/go.mod h1:l/V+30ZSZxtYpcqTeilLyKHk4oDfpWi429QwTID3ITQ=
 github.com/oarkflow/log v1.0.74 h1:ZF+G7ZMO2bHRcNMVovqa3LwkzxsaQqhaFCe92Gwwhtg=
@@ -108,6 +112,8 @@ github.com/oarkflow/metadata v0.0.44 h1:sUzccj6n+sFaEDnSCUQvUgujquguYIKYVPlZXVFO
 github.com/oarkflow/metadata v0.0.44/go.mod h1:Ttsu07bHkjsORVpD2Db4RhCXKqm27u9mTg+hx+lP3g8=
 github.com/oarkflow/pkg v0.1.26 h1:zbmLwEBGpC4ALeBDVgOWw1H8DPhmaGy5I6kT7tMy4SQ=
 github.com/oarkflow/pkg v0.1.26/go.mod h1:pzbHbdDnTgq4dMs5DjWSRIHRHWEcTW2HvVrUgPK9eXs=
+github.com/oarkflow/pkg v0.1.27 h1:yt7rsLW+cOm3BTxASC6xXCq9q/MUYRpr/ga38P7glCk=
+github.com/oarkflow/pkg v0.1.27/go.mod h1:R3S+oxbRBIiCuFxIVouxsNj80n37C9GbONjO0/5YIPc=
 github.com/oarkflow/protocol v0.0.15 h1:/L3yEB2IIlnZdH62j6V/V1WLxakfXCe8p6thix4glGM=
 github.com/oarkflow/protocol v0.0.15/go.mod h1:pOuHsTve77iF2IAoMgDq36jDLCNJbI/6Px2dwtMjSu0=
 github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8/go.mod h1:HKlIX3XHQyzLZPlr7++PzdhaXEj94dEiJgZDTsxEqUI=
@@ -146,6 +152,8 @@ golang.org/x/crypto v0.9.0/go.mod h1:yrmDGqONDYtNj3tH8X9dzUun2m2lzPa9ngI6/RUPGR0
 golang.org/x/crypto v0.12.0/go.mod h1:NF0Gs7EO5K4qLn+Ylc+fih8BSTeIjAP05siRnAh98yw=
 golang.org/x/crypto v0.19.0 h1:ENy+Az/9Y1vSrlrvBSyna3PITt4tiZLf7sgCjZBX7Wo=
 golang.org/x/crypto v0.19.0/go.mod h1:Iy9bg/ha4yyC70EfRS8jz+B6ybOBKMaSxLj6P6oBDfU=
+golang.org/x/crypto v0.20.0 h1:jmAMJJZXr5KiCw05dfYK9QnqaqKLYXijU23lsEdcQqg=
+golang.org/x/crypto v0.20.0/go.mod h1:Xwo95rrVNIoSMx9wa1JroENMToLWn3RNVrTBpLHgZPQ=
 golang.org/x/exp v0.0.0-20240222234643-814bf88cf225 h1:LfspQV/FYTatPTr/3HzIcmiUFH7PGP+OQ6mgDYo3yuQ=
 golang.org/x/exp v0.0.0-20240222234643-814bf88cf225/go.mod h1:CxmFvTBINI24O/j8iY7H1xHzx2i4OsyguNBmN/uPtqc=
 golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4/go.mod h1:jJ57K6gSWd91VN4djpZkiMVwK6gcyfeH4XE8wZrZaV4=

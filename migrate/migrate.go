@@ -31,6 +31,7 @@ type TableConfig struct {
 	KeyValueTable        bool                `json:"key_value_table" yaml:"key_value_table"`
 	StoreDataType        bool                `json:"store_data_type" yaml:"store_data_type"`
 	UpdateSequence       bool                `yaml:"update_sequence" json:"update_sequence"`
+	Update               bool                `json:"update" yaml:"update"`
 	Mapping              map[string]string   `json:"mapping" yaml:"mapping"`
 	MultipleMapping      []map[string]string `json:"multiple_mapping" yaml:"multiple_mapping"`
 	Lookups              string              `json:"lookups" yaml:"lookups"`
