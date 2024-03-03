@@ -1,0 +1,32 @@
+source:
+    host: "localhost"
+    port: 5432
+    driver: "postgresql"
+    username: "postgres"
+    password: "postgres"
+    database: "clear20"
+    disablelogger: true
+destination:
+    host: "localhost"
+    port: 5432
+    driver: "postgresql"
+    username: "postgres"
+    password: "postgres"
+    database: "clear20"
+    disablelogger: true
+tables:
+    -   new_name: "company_entities"
+        migrate: true
+        clone_source: false
+        batch_size: 1000
+        query: "SELECT company_service_id, entity, entity_id FROM (SELECT cs.company_service_id FROM companies c JOIN company_services cs ON c.company_id = cs.company_id WHERE c.slug = 'edelberg-and-associates') c, entities;"
+        skip_store_error: true
+        truncate_destination: true
+        mapping:
+            company_service_id: "company_service_id"
+            entity: "entity"
+            entity_id: "entity_id"
+            status: "{{'ACTIVE'}}"
+            created_at: "{{now()}}"
+            updated_at: "{{now()}}"
+            is_active: "{{true}}"

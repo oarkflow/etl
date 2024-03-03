@@ -1,0 +1,30 @@
+source:
+    host: "127.0.0.1"
+    port: 3306
+    driver: "mysql"
+    username: "root"
+    password: "root"
+    database: "cleardb"
+    disablelogger: true
+destination:
+    host: "localhost"
+    port: 5432
+    driver: "postgresql"
+    username: "postgres"
+    password: "postgres"
+    database: "clear20"
+    disablelogger: true
+tables:
+    -   old_name: "tbl_work_item"
+        new_name: "entities"
+        migrate: true
+        clone_source: false
+        batch_size: 1000
+        skip_store_error: true
+        truncate_destination: true
+        mapping:
+            entity: "{{'facility'}}"
+            entity_id: "work_item_uid"
+            created_at: "{{now()}}"
+            updated_at: "{{now()}}"
+            is_active: "{{true}}"

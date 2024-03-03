@@ -1,0 +1,24 @@
+source:
+    host: "127.0.0.1"
+    port: 3306
+    driver: "mysql"
+    username: "root"
+    password: "root"
+    database: "cleardb"
+    disablelogger: true
+destination:
+    host: "localhost"
+    port: 5432
+    driver: "postgresql"
+    username: "postgres"
+    password: "postgres"
+    database: "clear20"
+    disablelogger: true
+tables:
+    -   old_name: "tbl_user_access"
+        new_name: "tbl_user_access"
+        migrate: true
+        clone_source: true
+        batch_size: 1000
+        skip_store_error: true
+        truncate_destination: true

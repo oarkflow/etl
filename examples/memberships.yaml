@@ -1,0 +1,31 @@
+source:
+    host: "localhost"
+    port: 5432
+    driver: "postgresql"
+    username: "postgres"
+    password: "postgres"
+    database: "clear20"
+    disablelogger: true
+destination:
+    host: "localhost"
+    port: 5432
+    driver: "postgresql"
+    username: "postgres"
+    password: "postgres"
+    database: "clear20"
+    disablelogger: true
+tables:
+    -   new_name: "memberships"
+        migrate: true
+        clone_source: false
+        batch_size: 1000
+        query: "SELECT DISTINCT ua.user_uid as user_id, cr.company_role_id FROM tbl_user_access ua JOIN roles r ON ua.user_type_id = r.role_id JOIN company_roles cr ON cr.role_id = r.role_id JOIN company_services cs ON cs.company_service_id = cr.company_service_id;"
+        skip_store_error: true
+        truncate_destination: true
+        mapping:
+            company_role_id: "company_role_id"
+            user_id: "user_id"
+            status: "{{'ACTIVE'}}"
+            created_at: "{{now()}}"
+            updated_at: "{{now()}}"
+            is_active: "{{true}}"
