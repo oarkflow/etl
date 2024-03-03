@@ -74,4 +74,3 @@ tables:
             - "user_email_address"
             - "user_password"
             - "user_active"
-            - "user_organization"

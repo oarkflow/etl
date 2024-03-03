@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gosimple/slug"
+	"github.com/oarkflow/log"
 	"github.com/oarkflow/pkg/evaluate"
 	"github.com/oarkflow/pkg/str"
 
@@ -15,6 +17,19 @@ import (
 	"github.com/oarkflow/metadata"
 	"github.com/oarkflow/pkg/rule"
 )
+
+func init() {
+	evaluate.AddCustomOperator("slug", func(ctx evaluate.EvalContext) (interface{}, error) {
+		if err := ctx.CheckArgCount(1); err != nil {
+			return "", err
+		}
+		st, err := ctx.Arg(0)
+		if err != nil {
+			return "", err
+		}
+		return slug.Make(fmt.Sprintf("%v", st)), nil
+	})
+}
 
 type Data any
 
@@ -323,7 +338,7 @@ func (e *ETL) processFailedData(payload map[int64][]map[string]any) ([]map[strin
 			payloadLen++
 			err := e.destCon.Store(e.dest.Name, data)
 			if err != nil {
-				panic(err)
+				log.Error().Err(err).Msg("Error on storing data")
 				failedDataLen++
 				if !e.cfg.SkipStoreError {
 					errMsg := err.Error()

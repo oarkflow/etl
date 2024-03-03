@@ -1,0 +1,47 @@
+source:
+    host: "localhost"
+    port: 5432
+    driver: "postgresql"
+    username: "postgres"
+    password: "postgres"
+    database: "clear20"
+    disablelogger: true
+destination:
+    host: "localhost"
+    port: 5432
+    driver: "postgresql"
+    username: "postgres"
+    password: "postgres"
+    database: "clear20"
+    disablelogger: true
+tables:
+    -   old_name: "tbl_user_type"
+        new_name: "company_services"
+        migrate: true
+        clone_source: false
+        batch_size: 1000
+        query: "SELECT company_id, (SELECT service_id FROM services WHERE slug='medical-coding' LIMIT 1) FROM companies;"
+        skip_store_error: true
+        truncate_destination: true
+        mapping:
+            company_id: "company_id"
+            service_id: "service_id"
+            created_at: "{{now()}}"
+            updated_at: "{{now()}}"
+            status: "{{'ACTIVE'}}"
+            is_active: "{{true}}"
+    -   old_name: "tbl_user_type"
+        new_name: "company_roles"
+        migrate: true
+        clone_source: false
+        batch_size: 1000
+        query: "SELECT company_service_id, role_id FROM company_services,roles;"
+        skip_store_error: true
+        truncate_destination: true
+        mapping:
+            company_service_id: "company_service_id"
+            role_id: "role_id"
+            created_at: "{{now()}}"
+            updated_at: "{{now()}}"
+            status: "{{'ACTIVE'}}"
+            is_active: "{{true}}"

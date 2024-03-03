@@ -1,0 +1,53 @@
+source:
+    host: "127.0.0.1"
+    port: 3306
+    driver: "mysql"
+    username: "root"
+    password: "root"
+    database: "cleardb"
+    disablelogger: true
+destination:
+    host: "localhost"
+    port: 5432
+    driver: "postgresql"
+    username: "postgres"
+    password: "postgres"
+    database: "clear20"
+    disablelogger: true
+tables:
+    -   old_name: "tbl_user_organisation"
+        new_name: "accounts"
+        migrate: true
+        clone_source: false
+        batch_size: 1000
+        skip_store_error: true
+        truncate_destination: true
+        mapping:
+            account_id: "user_organization_uid"
+            name: "organization_name"
+            slug: "{{slug(organization_name)}}"
+            created_by: "create_by"
+            updated_by: "updated_by"
+            created_at: "{{create_at ? create_at : now()}}"
+            status: "{{'ACTIVE'}}"
+            is_active: "{{true}}"
+    -   old_name: "tbl_user_organisation"
+        new_name: "companies"
+        migrate: true
+        clone_source: false
+        batch_size: 1000
+        skip_store_error: true
+        truncate_destination: true
+        mapping:
+            company_id: "user_organization_uid"
+            account_id: "user_organization_uid"
+            name: "organization_name"
+            logo: "organization_logo"
+            url: "organization_url"
+            slug: "{{slug(organization_name)}}"
+            currency: "{{'USD'}}"
+            created_by: "create_by"
+            updated_by: "updated_by"
+            created_at: "{{create_at ? create_at : now()}}"
+            status: "{{'ACTIVE'}}"
+            is_active: "{{true}}"

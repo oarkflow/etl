@@ -19,6 +19,7 @@ type TableConfig struct {
 	NewName              string              `json:"new_name" yaml:"new_name"`
 	QueryName            string              `yaml:"query_name" json:"query_name"`
 	Query                string              `yaml:"query" json:"query"`
+	UpdateQuery          string              `yaml:"update_query" json:"update_query"`
 	QueryIdentifierField string              `yaml:"query_identifier_field" json:"query_identifier_field"`
 	Migrate              bool                `json:"migrate" yaml:"migrate"`
 	CloneSource          bool                `json:"clone_source" yaml:"clone_source"`
@@ -121,11 +122,27 @@ func Data(srcConfig, dstConfig metadata.Config, tableList []TableConfig) error {
 				if err != nil {
 					return err
 				}
+
+				if tableConfig.TruncateDestination && dConnector != nil {
+					err := dConnector.Exec("TRUNCATE TABLE " + tableConfig.NewName)
+					if err != nil {
+						return err
+					}
+				}
 				err = dConnector.StoreInBatches(tableConfig.NewName, allSettings, 1000)
 				if err != nil {
 					return err
 				}
 				fmt.Printf("Inserted %v the data into %s\n", len(allSettings), tableConfig.NewName)
+			} else if tableConfig.UpdateQuery != "" {
+				dConnector, err := destination.Connect()
+				if err != nil {
+					return err
+				}
+				err = dConnector.Exec(tableConfig.UpdateQuery)
+				if err != nil {
+					return err
+				}
 			} else {
 				err := tableMigration(source, destination, tableConfig)
 				if err != nil {

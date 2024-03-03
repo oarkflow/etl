@@ -1,0 +1,21 @@
+source:
+    host: "localhost"
+    port: 5432
+    driver: "postgresql"
+    username: "postgres"
+    password: "postgres"
+    database: "clear20"
+    disablelogger: true
+destination:
+    host: "localhost"
+    port: 5432
+    driver: "postgresql"
+    username: "postgres"
+    password: "postgres"
+    database: "clear20"
+    disablelogger: true
+tables:
+    -   new_name: "user_settings"
+        migrate: true
+        clone_source: false
+        update_query: "UPDATE user_settings SET company_id = q.company_id FROM (SELECT user_id, CASE WHEN \"key\" = 'user_organization' AND \"value\" != NULL THEN \"value\"::int ELSE (SELECT company_id FROM companies WHERE slug='edelberg-and-associates' LIMIT 1) END as company_id FROM user_settings) q WHERE user_settings.user_id = q.user_id"
