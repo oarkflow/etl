@@ -30,6 +30,7 @@ tables:
             last_name: "user_last_name"
             email: "user_email_address"
             created_by: "added_by"
+            email_verified_at: "added_by"
             created_at: "{{added_utc ? added_utc : now()}}"
             updated_at: "{{added_utc ? added_utc : now()}}"
             status: "{{user_active == 1 ? 'ACTIVE': 'INACTIVE'}}"
