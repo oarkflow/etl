@@ -1,0 +1,30 @@
+source:
+    host: "localhost"
+    port: 5432
+    driver: "postgresql"
+    username: "postgres"
+    password: "postgres"
+    database: "clear20"
+    disablelogger: true
+destination:
+    host: "localhost"
+    port: 5432
+    driver: "postgresql"
+    username: "postgres"
+    password: "postgres"
+    database: "clear20"
+    disablelogger: true
+tables:
+    -   new_name: "services"
+        migrate: true
+        clone_source: false
+        batch_size: 1000
+        skip_store_error: true
+        query: "SELECT 'Medical Coding' as name, 'medical-coding' as slug, true as is_active, 'ACTIVE' as status, now() as created_at;"
+        mapping:
+            name: "name"
+            slug: "slug"
+            created_at: "created_at"
+            status: "status"
+            is_active: "is_active"
+        

@@ -42,9 +42,10 @@ func main() {
 }
 
 type Config struct {
-	Source      metadata.Config       `json:"source"`
-	Destination metadata.Config       `json:"destination"`
-	Tables      []migrate.TableConfig `json:"tables"`
+	Source      metadata.Config       `json:"source" yaml:"source"`
+	Destination metadata.Config       `json:"destination" yaml:"destination"`
+	Tables      []migrate.TableConfig `json:"tables" yaml:"tables"`
+	Files       []string              `json:"files" yaml:"files"`
 }
 
 // loadJson loads the yaml configuration file and returns a Config struct.

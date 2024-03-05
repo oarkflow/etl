@@ -21,6 +21,7 @@ tables:
         batch_size: 1000
         query: "SELECT company_service_id, entity, entity_id FROM (SELECT cs.company_service_id FROM companies c JOIN company_services cs ON c.company_id = cs.company_id WHERE c.slug = 'edelberg-and-associates') c, entities;"
         skip_store_error: true
+        update_sequence: true
         truncate_destination: true
         mapping:
             company_service_id: "company_service_id"

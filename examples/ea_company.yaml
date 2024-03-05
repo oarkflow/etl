@@ -1,0 +1,52 @@
+source:
+    host: "localhost"
+    port: 5432
+    driver: "postgresql"
+    username: "postgres"
+    password: "postgres"
+    database: "clear20"
+    disablelogger: true
+destination:
+    host: "localhost"
+    port: 5432
+    driver: "postgresql"
+    username: "postgres"
+    password: "postgres"
+    database: "clear20"
+    disablelogger: true
+tables:
+    -   old_name: "accounts"
+        new_name: "accounts"
+        migrate: true
+        clone_source: false
+        batch_size: 1000
+        skip_store_error: true
+        query: "SELECT 'Edelberg & Associates' as name, 'edelberg-and-associates' as slug, true as is_active, 'ACTIVE' as status, now() as created_at;"
+        mapping:
+            name: "name"
+            slug: "slug"
+            created_at: "created_at"
+            status: "status"
+            is_active: "is_active"
+    -   old_name: "companies"
+        new_name: "companies"
+        migrate: true
+        clone_source: false
+        batch_size: 1000
+        skip_store_error: true
+        query: "SELECT 'Edelberg & Associates' as name, 'edelberg-and-associates' as slug, true as is_active, 'ACTIVE' as status, now() as created_at, (SELECT account_id FROM accounts WHERE slug='edelberg-and-associates' LIMIT 1) as account_id;"
+        mapping:
+            name: "name"
+            slug: "slug"
+            created_at: "created_at"
+            status: "status"
+            is_active: "is_active"
+            account_id: "account_id"
+            is_default: "{{true}}"
+            currency: "{{'USD'}}"
+            email: "{{'info@edelberg.com'}}"
+    -   new_name: "companies"
+        migrate: true
+        clone_source: false
+        update_query: "UPDATE companies SET parent_company_id=(SELECT company_id FROM companies WHERE slug = 'edelberg-and-associates' LIMIT 1) WHERE slug !='edelberg-and-associates'"
+        

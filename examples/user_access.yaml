@@ -20,5 +20,6 @@ tables:
         migrate: true
         clone_source: true
         batch_size: 1000
+        update_sequence: true
         skip_store_error: true
         truncate_destination: true

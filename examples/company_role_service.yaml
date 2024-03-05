@@ -20,6 +20,7 @@ tables:
         migrate: true
         clone_source: false
         batch_size: 1000
+        update_sequence: true
         query: "SELECT company_id, (SELECT service_id FROM services WHERE slug='medical-coding' LIMIT 1) FROM companies;"
         skip_store_error: true
         truncate_destination: true
@@ -35,6 +36,7 @@ tables:
         migrate: true
         clone_source: false
         batch_size: 1000
+        update_sequence: true
         query: "SELECT company_service_id, role_id FROM company_services,roles;"
         skip_store_error: true
         truncate_destination: true

@@ -10,7 +10,7 @@ replace (
 require (
 	github.com/brianvoe/gofakeit/v7 v7.0.1
 	github.com/oarkflow/etl v0.0.21
-	github.com/oarkflow/metadata v0.0.44
+	github.com/oarkflow/metadata v0.0.45
 	github.com/oarkflow/pkg v0.1.27
 	gopkg.in/yaml.v3 v3.0.1
 )

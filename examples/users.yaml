@@ -20,6 +20,7 @@ tables:
         migrate: true
         clone_source: false
         batch_size: 1000
+        update_sequence: true
         skip_store_error: true
         truncate_destination: true
         mapping:
@@ -40,6 +41,7 @@ tables:
         migrate: true
         clone_source: false
         batch_size: 1000
+        update_sequence: true
         skip_store_error: true
         truncate_destination: true
         mapping:
@@ -57,6 +59,7 @@ tables:
         clone_source: false
         batch_size: 1000
         skip_store_error: true
+        update_sequence: true
         key_value_table: true
         truncate_destination: true
         extra_values:

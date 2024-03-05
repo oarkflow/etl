@@ -1,0 +1,17 @@
+{
+	"path": "/home/sujit/Projects/oarkflow/etl/examples",
+	"files": [
+		"companies.yaml",
+		"services.yaml",
+		"ea_company.yaml",
+		"user_type.yaml",
+		"entities.yaml",
+		"company_entities.yaml",
+		"company_role_service.yaml",
+		"users.yaml",
+		"user_settings.yaml",
+		"user_access.yaml",
+		"user_permission.yaml",
+		"memberships.yaml"
+	]
+}

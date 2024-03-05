@@ -21,6 +21,7 @@ tables:
         clone_source: false
         batch_size: 1000
         skip_store_error: true
+        update_sequence: true
         truncate_destination: true
         mapping:
             account_id: "user_organization_uid"
@@ -36,6 +37,7 @@ tables:
         migrate: true
         clone_source: false
         batch_size: 1000
+        update_sequence: true
         skip_store_error: true
         truncate_destination: true
         mapping:

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/oarkflow/errors"
 	"github.com/oarkflow/metadata"
 	"github.com/oarkflow/pkg/evaluate"
 	"gopkg.in/yaml.v3"
@@ -73,6 +74,7 @@ func Data(srcConfig, dstConfig metadata.Config, tableList []TableConfig) error {
 				if err != nil {
 					return err
 				}
+				fmt.Println(dataList)
 				var allSettings []map[string]any
 				for _, data := range dataList {
 					mapping := make(map[string]any)
@@ -126,7 +128,10 @@ func Data(srcConfig, dstConfig metadata.Config, tableList []TableConfig) error {
 				if tableConfig.TruncateDestination && dConnector != nil {
 					err := dConnector.Exec("TRUNCATE TABLE " + tableConfig.NewName)
 					if err != nil {
-						return err
+						err = dConnector.Exec("DELETE FROM " + tableConfig.NewName)
+						if err != nil {
+							return errors.NewE(err, tableConfig.NewName, "ETLMigration")
+						}
 					}
 				}
 				err = dConnector.StoreInBatches(tableConfig.NewName, allSettings, 1000)

@@ -385,7 +385,10 @@ func (e *ETL) Process(filter ...map[string]any) (map[int64][]map[string]any, err
 	if e.cfg.TruncateDestination && e.destCon != nil {
 		err := e.destCon.Exec("TRUNCATE TABLE " + e.dest.Name)
 		if err != nil {
-			return nil, err
+			err = e.destCon.Exec("DELETE FROM " + e.dest.Name)
+			if err != nil {
+				return nil, errors.NewE(err, e.dest.Name, "ETLMigration")
+			}
 		}
 	}
 	fmt.Println(fmt.Sprintf("Processing migration for %s.%s.%s to %s.%s.%s", e.srcCon.Config().Driver, e.srcCon.Config().Database, e.src.Name, e.destCon.Config().Driver, e.destCon.Config().Database, e.dest.Name))
@@ -404,7 +407,7 @@ func (e *ETL) Process(filter ...map[string]any) (map[int64][]map[string]any, err
 		data = nil
 		failedRows += len(failed)
 		failedData[offset] = failed
-		fmt.Println(fmt.Sprintf("Processed %d records in %s.%s.%s at %v", offset, e.srcCon.Config().Driver, e.srcCon.Config().Database, e.src.Name, time.Now()))
+		fmt.Println(fmt.Sprintf("Processed %d records from %s.%s.%s to %s.%s.%s at %v", offset, e.srcCon.Config().Driver, e.srcCon.Config().Database, e.src.Name, e.destCon.Config().Driver, e.destCon.Config().Database, e.dest.Name, time.Now()))
 	}
 	processedRecords := totalData - failedRows
 	if processedRecords > 0 {
