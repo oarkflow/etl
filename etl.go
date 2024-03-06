@@ -338,7 +338,7 @@ func (e *ETL) processFailedData(payload map[int64][]map[string]any) ([]map[strin
 			payloadLen++
 			err := e.destCon.Store(e.dest.Name, data)
 			if err != nil {
-				log.Error().Err(err).Msg("Error on storing data")
+				log.Error().Err(err).Msgf("Error on storing data to %s", e.dest.Name)
 				failedDataLen++
 				if !e.cfg.SkipStoreError {
 					errMsg := err.Error()
@@ -411,7 +411,7 @@ func (e *ETL) Process(filter ...map[string]any) (map[int64][]map[string]any, err
 	}
 	processedRecords := totalData - failedRows
 	if processedRecords > 0 {
-		fmt.Println(fmt.Sprintf("Processed %d records of %d in %s.%s.%s", processedRecords, totalData, e.srcCon.Config().Driver, e.srcCon.Config().Database, e.src.Name))
+		fmt.Println(fmt.Sprintf("Processed %d records from %s.%s.%s to %s.%s.%s at %v", processedRecords, e.srcCon.Config().Driver, e.srcCon.Config().Database, e.src.Name, e.destCon.Config().Driver, e.destCon.Config().Database, e.dest.Name, time.Now()))
 	}
 
 	if len(e.dest.MultipleDestinations) > 0 {

@@ -35,10 +35,35 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = migrate.Data(cfg.Source, cfg.Destination, cfg.Tables)
-	if err != nil {
-		log.Fatal(err)
+	if len(cfg.Files) > 0 {
+		for _, f := range cfg.Files {
+			err := ProcessFile(filepath.Join(cfg.Path, f))
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+	} else {
+		err = migrate.Data(cfg.Source, cfg.Destination, cfg.Tables)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
+}
+
+func ProcessFile(file string) (err error) {
+	var cfg *Config
+	switch filepath.Ext(file) {
+	case ".yaml":
+		cfg, err = loadYaml(file)
+	case ".json":
+		cfg, err = loadJson(file)
+	default:
+		log.Fatalf("Unsupported file format, requires yaml or json file")
+	}
+	if err != nil {
+		return err
+	}
+	return migrate.Data(cfg.Source, cfg.Destination, cfg.Tables)
 }
 
 type Config struct {
@@ -46,6 +71,7 @@ type Config struct {
 	Destination metadata.Config       `json:"destination" yaml:"destination"`
 	Tables      []migrate.TableConfig `json:"tables" yaml:"tables"`
 	Files       []string              `json:"files" yaml:"files"`
+	Path        string                `json:"path" yaml:"path"`
 }
 
 // loadJson loads the yaml configuration file and returns a Config struct.

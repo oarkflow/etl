@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/oarkflow/errors"
+	"github.com/oarkflow/log"
 	"github.com/oarkflow/metadata"
 	"github.com/oarkflow/pkg/evaluate"
 	"gopkg.in/yaml.v3"
@@ -74,7 +75,6 @@ func Data(srcConfig, dstConfig metadata.Config, tableList []TableConfig) error {
 				if err != nil {
 					return err
 				}
-				fmt.Println(dataList)
 				var allSettings []map[string]any
 				for _, data := range dataList {
 					mapping := make(map[string]any)
@@ -138,7 +138,7 @@ func Data(srcConfig, dstConfig metadata.Config, tableList []TableConfig) error {
 				if err != nil {
 					return err
 				}
-				fmt.Printf("Inserted %v the data into %s\n", len(allSettings), tableConfig.NewName)
+				fmt.Println(fmt.Sprintf("Processed %d from query to %s.%s.%s", len(allSettings), destination.Config().Driver, destination.Config().Database, tableConfig.NewName))
 			} else if tableConfig.UpdateQuery != "" {
 				dConnector, err := destination.Connect()
 				if err != nil {
@@ -155,7 +155,7 @@ func Data(srcConfig, dstConfig metadata.Config, tableList []TableConfig) error {
 				}
 			}
 		} else if tableConfig.OldName == "nil" {
-			fmt.Printf("Creating new entry for %s\n", tableConfig.NewName)
+			log.Info().Msgf("Creating new entry for %s\n", tableConfig.NewName)
 			connector, err := destination.Connect()
 			if err != nil {
 				return err
