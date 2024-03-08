@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/oarkflow/metadata"
+	metadata "github.com/oarkflow/metadata/v2"
 	"github.com/oarkflow/pkg/rule"
 
 	"github.com/oarkflow/etl"

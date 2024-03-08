@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/brianvoe/gofakeit/v7"
-	"github.com/oarkflow/metadata"
+	metadata "github.com/oarkflow/metadata/v2"
 )
 
 const tableName = "users"

@@ -7,7 +7,7 @@ import (
 
 	"github.com/oarkflow/errors"
 	"github.com/oarkflow/log"
-	"github.com/oarkflow/metadata"
+	metadata "github.com/oarkflow/metadata/v2"
 	"github.com/oarkflow/pkg/evaluate"
 	"gopkg.in/yaml.v3"
 
