@@ -4,7 +4,6 @@ go 1.22.0
 
 replace (
 	github.com/oarkflow/etl => ../
-	gorm.io/gorm => github.com/sujit-baniya/gorm v0.0.5
 )
 
 require (
