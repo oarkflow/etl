@@ -20,7 +20,7 @@ tables:
         clone_source: false
         batch_size: 1000
         update_sequence: true
-        query: "SELECT DISTINCT ua.user_uid as user_id, cr.company_role_id FROM tbl_user_access ua JOIN roles r ON ua.user_type_id = r.role_id JOIN company_roles cr ON cr.role_id = r.role_id JOIN company_services cs ON cs.company_service_id = cr.company_service_id;"
+        query: "SELECT DISTINCT ua.user_uid as user_id, cr.company_role_id FROM tbl_user_access ua JOIN roles r ON ua.user_type_id = r.role_id JOIN company_roles cr ON cr.role_id = r.role_id JOIN company_services cs ON cs.company_service_id = cr.company_service_id JOIN company_entities ce ON ce.company_service_id = cr.company_service_id ANd ce.company_service_id = cs.company_service_id;"
         skip_store_error: true
         truncate_destination: true
         mapping:
@@ -30,3 +30,24 @@ tables:
             created_at: "{{now()}}"
             updated_at: "{{now()}}"
             is_active: "{{true}}"
+    -   new_name: "user_settings"
+        migrate: true
+        key_value_table: true
+        query: "SELECT DISTINCT u.user_id, cs.company_id::text as company_id, cs.service_id::text as service_id FROM users u JOIN memberships m ON u.user_id = m.user_id JOIN company_roles cr ON m.company_role_id = cr.company_role_id JOIN company_services cs ON cr.company_service_id = cs.company_service_id;"
+        multiple_mapping:
+            -   key: "{{'default_company'}}"
+                value: "company_id"
+                company_id: "company_id"
+                value_type: "{{'int'}}"
+    
+            -   key: "{{'default_service'}}"
+                value: "service_id"
+                company_id: "company_id"
+                value_type: "{{'int'}}"
+        mapping:
+            user_id: "user_id"
+            status: "{{'ACTIVE'}}"
+            company_id: "company_id"
+            is_active: "{{true}}"
+        exclude_fields:
+            - "service_id"
