@@ -6,12 +6,12 @@
 		"ea_company.yaml",
 		"user_type.yaml",
 		"entities.yaml",
-		"company_entities.yaml",
 		"company_role_service.yaml",
 		"users.yaml",
 		"user_settings.yaml",
 		"user_access.yaml",
 		"user_permission.yaml",
+		"company_entities.yaml",
 		"memberships.yaml"
 	]
 }
