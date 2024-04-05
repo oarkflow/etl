@@ -394,7 +394,7 @@ func (e *ETL) Process(filter ...map[string]any) (map[int64][]map[string]any, err
 	fmt.Println(fmt.Sprintf("Processing migration for %s.%s.%s to %s.%s.%s", e.srcCon.Config().Driver, e.srcCon.Config().Database, e.src.Name, e.destCon.Config().Driver, e.destCon.Config().Database, e.dest.Name))
 	for !page.Last {
 		offset := page.Offset
-		data, err := e.getData(page)
+		data, err := e.GetData(page)
 		dataLen := len(data)
 		totalData += dataLen
 		if err != nil {
@@ -420,7 +420,7 @@ func (e *ETL) Process(filter ...map[string]any) (map[int64][]map[string]any, err
 	return failedData, nil
 }
 
-func (e *ETL) getData(page *Page) ([]map[string]any, error) {
+func (e *ETL) GetData(page *Page) ([]map[string]any, error) {
 	if e.src.Name == "" {
 		return nil, errors.New("source not defined")
 	}
