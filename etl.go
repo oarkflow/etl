@@ -14,7 +14,7 @@ import (
 	"github.com/oarkflow/pkg/str"
 
 	"github.com/oarkflow/errors"
-	metadata "github.com/oarkflow/metadata/v2"
+	"github.com/oarkflow/metadata"
 	"github.com/oarkflow/pkg/rule"
 )
 

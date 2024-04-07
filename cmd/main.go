@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	metadata "github.com/oarkflow/metadata/v2"
+	"github.com/oarkflow/metadata"
 	"gopkg.in/yaml.v3"
 
 	"github.com/oarkflow/etl/migrate"
