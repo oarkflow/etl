@@ -3,10 +3,10 @@ package utils
 import (
 	"fmt"
 	"os"
-
-	metadata "github.com/oarkflow/metadata/v2"
+	
+	"github.com/oarkflow/metadata"
 	"gopkg.in/yaml.v3"
-
+	
 	"github.com/oarkflow/etl/migrate"
 )
 
@@ -25,13 +25,13 @@ func LoadConfig(filename string) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to read configuration file: %w", err)
 	}
-
+	
 	config := &Config{}
 	err = yaml.Unmarshal(data, config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse configuration file: %w", err)
 	}
-
+	
 	return config, nil
 }
 
