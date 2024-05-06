@@ -6,7 +6,7 @@ require (
 	github.com/gosimple/slug v1.14.0
 	github.com/oarkflow/errors v0.0.6
 	github.com/oarkflow/log v1.0.74
-	github.com/oarkflow/metadata v0.0.52
+	github.com/oarkflow/metadata v0.0.53
 	github.com/oarkflow/pkg v0.1.42
 	gopkg.in/yaml.v3 v3.0.1
 )
