@@ -6,7 +6,7 @@ require (
 	github.com/gosimple/slug v1.14.0
 	github.com/oarkflow/errors v0.0.6
 	github.com/oarkflow/log v1.0.74
-	github.com/oarkflow/metadata v0.0.51
+	github.com/oarkflow/metadata v0.0.52
 	github.com/oarkflow/pkg v0.1.42
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -29,7 +29,7 @@ require (
 	github.com/oarkflow/frame v0.0.67 // indirect
 	github.com/oarkflow/json v0.0.5 // indirect
 	github.com/oarkflow/protocol v0.0.15 // indirect
-	github.com/oarkflow/squealx v0.0.11 // indirect
+	github.com/oarkflow/squealx v0.0.12 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/toorop/go-dkim v0.0.0-20240103092955-90b7d1423f92 // indirect
@@ -37,7 +37,7 @@ require (
 	golang.org/x/crypto v0.22.0 // indirect
 	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f // indirect
 	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/text v0.15.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	google.golang.org/protobuf v1.34.0 // indirect
 )

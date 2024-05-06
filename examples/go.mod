@@ -7,7 +7,7 @@ replace github.com/oarkflow/etl => ../
 require (
 	github.com/brianvoe/gofakeit/v7 v7.0.1
 	github.com/oarkflow/etl v0.0.21
-	github.com/oarkflow/metadata v0.0.51
+	github.com/oarkflow/metadata v0.0.52
 	github.com/oarkflow/pkg v0.1.42
 	gopkg.in/yaml.v3 v3.0.1
 )
