@@ -12,56 +12,26 @@ destination:
     driver: "postgresql"
     username: "postgres"
     password: "postgres"
-    database: "clear20"
+    database: "clear_dev"
     disablelogger: true
 tables:
-    -   old_name: "tbl_work_item_encounter_form"
+    -   old_name: "tbl_work_item"
         new_name: "work_item_settings"
         migrate: true
-        query: "SELECT * from tbl_work_item_encounter_form;"
-        multiple_mapping:
-            -   key: "{{'fin_min'}}"
-                value: "string(fin_length)"
-                value_type: "{{'int'}}"
-
-            -   key: "{{'fin_max'}}"
-                value: "string(fin_length)"
-                value_type: "{{'int'}}"
-
-            -   key: "{{'mrn_min'}}"
-                value: "string(mrn_length)"
-                value_type: "{{'int'}}"
-
-            -   key: "{{'mrn_max'}}"
-                value: "string(mrn_length)"
-                value_type: "{{'int'}}"
+        keep_unmatched_fields: true
+        exclude_fields:
+            - "facility_id"
+            - "work_item_type_id"
+            - "work_item_uid"
+        include_fields:
+            - "work_item_id"
+            - "is_active"
+            - "status"
+        extra_values:
+            wi_setting_order_index: 1
+        key_value_table: true
+        store_data_type: true
         mapping:
             work_item_id: "work_item_uid"
-            wi_setting_order_index: "{{1}}"
-            status: "{{'ACTIVE'}}"
             is_active: "{{true}}"
-    -   old_name: "tbl_work_item_encounter_form"
-        new_name: "work_item_settings"
-        migrate: true
-        query: "SELECT work_item_uid  from tbl_work_item wi WHERE work_item_uid NOT IN (SELECT work_item_uid from tbl_work_item_encounter_form twief);"
-        multiple_mapping:
-            -   key: "{{'fin_min'}}"
-                value: "{{'1'}}"
-                value_type: "{{'int'}}"
-
-            -   key: "{{'fin_max'}}"
-                value: "{{'20'}}"
-                value_type: "{{'int'}}"
-
-            -   key: "{{'mrn_min'}}"
-                value: "{{'1'}}"
-                value_type: "{{'int'}}"
-
-            -   key: "{{'mrn_max'}}"
-                value: "{{'20'}}"
-                value_type: "{{'int'}}"
-        mapping:
-            work_item_id: "work_item_uid"
-            wi_setting_order_index: "{{1}}"
             status: "{{'ACTIVE'}}"
-            is_active: "{{true}}"

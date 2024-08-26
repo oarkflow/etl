@@ -1,6 +1,6 @@
 module examples
 
-go 1.22.0
+go 1.22.3
 
 replace github.com/oarkflow/etl => ../
 
