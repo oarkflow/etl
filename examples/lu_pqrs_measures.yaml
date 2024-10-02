@@ -1,0 +1,30 @@
+source:
+    host: "127.0.0.1"
+    port: 3306
+    driver: "mysql"
+    username: "root"
+    password: "root"
+    database: "cleardb"
+    disablelogger: true
+destination:
+    host: "localhost"
+    port: 5432
+    driver: "postgresql"
+    username: "postgres"
+    password: "postgres"
+    database: "clear_dev"
+    disablelogger: true
+tables:
+    -   old_name: "lu_pqrs_measure"
+        new_name: "lu_pqrs_measures"
+        migrate: true
+        keep_unmatched_fields: false
+        mapping:
+            description: "description"
+            female_only: "female_only"
+            max_age: "max_age"
+            min_age: "min_age"
+            title: "title"
+            effective_year: "effective_year"
+            status: "{{'ACTIVE'}}"
+            is_active: "{{true}}"
