@@ -1,6 +1,6 @@
 {
 	"path": "/home/sujit/Projects/oarkflow/etl/examples",
 	"files": [
-		"suspend_reasons.yaml"
+		"pqrs_condition.yaml"
 	]
 }
