@@ -1,0 +1,4 @@
+id,name,age,email,original_field,old_field
+1,John Doe,29,john.doe@example.com,Sample Data,Old Value
+2,Jane Smith,34,jane.smith@example.com,Another Data,Another Old Value
+3,Michael Brown,22,michael.brown@example.com,More Data,More Old Value
