@@ -23,6 +23,7 @@ tables:
             pqrs_num: "pqrs_num"
             pqrs_num_2: "pqrs_num_2"
             pqrs_measure: "pqrs_measure"
+            modifier: "modifier"
             label: "label"
             effective_year: "effective_year"
             is_active: "{{true}}"

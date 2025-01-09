@@ -142,16 +142,6 @@ func (e *ETL) process(batch int64, data []map[string]any) ([]map[string]any, err
 		}
 		data = d.([]map[string]any)
 	}
-	/*var primaryKeyField string
-	var maxID int64
-	if e.srcCon != nil {
-		srcFields, _ := e.srcCon.GetFields(e.src.Name)
-		for _, f := range srcFields {
-			if f.Key == "PRI" {
-				primaryKeyField = f.Name
-			}
-		}
-	}*/
 	var destFields []metadata.Field
 	if e.destCon != nil {
 		destFields, err = e.destCon.GetFields(e.dest.Name)
@@ -161,12 +151,6 @@ func (e *ETL) process(batch int64, data []map[string]any) ([]map[string]any, err
 	}
 	for _, row := range data {
 		for field, val := range row {
-			/*if field == primaryKeyField {
-				result, _ := strconv.ParseInt(fmt.Sprintf("%v", val), 10, 64)
-				if result > maxID {
-					maxID = result
-				}
-			}*/
 			lowerField := strings.ToLower(field)
 			row[lowerField] = val
 			if lowerField != field {
@@ -199,13 +183,6 @@ func (e *ETL) process(batch int64, data []map[string]any) ([]map[string]any, err
 		if err != nil {
 			return rs, err
 		}
-		/*migrationInfo := &MigrationInfo{
-			Table:          e.src.Name,
-			PrimaryKey:     primaryKeyField,
-			LastInsertedID: maxID,
-			LastInsertedAt: time.Now(),
-		}
-		migrationInfo.Update()*/
 		return rs, err
 	}
 
@@ -214,13 +191,6 @@ func (e *ETL) process(batch int64, data []map[string]any) ([]map[string]any, err
 		if err != nil {
 			return rs, err
 		}
-		/*migrationInfo := &MigrationInfo{
-			Table:          e.src.Name,
-			PrimaryKey:     primaryKeyField,
-			LastInsertedID: maxID,
-			LastInsertedAt: time.Now(),
-		}
-		migrationInfo.Update()*/
 		return rs, err
 	}
 	return payload, nil

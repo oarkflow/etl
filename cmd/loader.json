@@ -1,6 +1,6 @@
 {
 	"path": "/home/sujit/Projects/oarkflow/etl/examples",
 	"files": [
-		"pqrs_condition.yaml"
+		"users_config.yaml"
 	]
 }

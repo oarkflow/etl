@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	file = flag.String("file", "", "File to migrate database")
+	file = flag.String("file", "loader.json", "File to migrate database")
 )
 
 func main() {

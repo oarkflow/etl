@@ -15,24 +15,19 @@ destination:
     database: "clear_dev"
     disablelogger: true
 tables:
-    -   old_name: "tbl_work_item"
+    -   old_name: "tbl_work_item_encounter_form"
         new_name: "work_item_settings"
         migrate: true
         keep_unmatched_fields: true
-        exclude_fields:
-            - "facility_id"
-            - "work_item_type_id"
-            - "work_item_uid"
-        include_fields:
-            - "work_item_id"
-            - "is_active"
-            - "status"
-        extra_values:
-            wi_setting_order_index: 1
-            value_type: "string"
+        update_sequence: true
         key_value_table: true
         store_data_type: true
-        mapping:
+        extra_values:
             work_item_id: "work_item_uid"
-            is_active: "{{true}}"
-            status: "{{'ACTIVE'}}"
+            wi_setting_order_index: 1
+        include_fields:
+            - "work_item_uid"
+            - "id"
+        exclude_fields:
+            - "id"
+            - "work_item_uid"
