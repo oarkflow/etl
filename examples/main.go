@@ -12,9 +12,10 @@ import (
 )
 
 func main() {
+	testRawSqlWithMapFilter()
 	// migrateDB()
 	// tableMigration()
-	multipleTablesMigration()
+	// multipleTablesMigration()
 	// entityMigration()
 	// settingsTableMigration()
 	// etlWithFilter()
@@ -22,8 +23,11 @@ func main() {
 }
 
 func testRawSqlWithMapFilter() {
-	src, _ := conn()
-	src.Connect()
+	source, _ := conn()
+	src, err := source.Connect()
+	if err != nil {
+		panic(err)
+	}
 	fmt.Println(src.GetRawCollection("SELECT * FROM tbl_user LIMIT 1", map[string]any{"user_email_address": "spbaniya@deerwalk.com"}))
 }
 
